@@ -1,0 +1,41 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "coze-anmol",
+          "appId": "1:398665331927:android:fe1db831f74d330c9f2c92",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "coze-anmol",
+          "configurations": {
+            "android": "1:398665331927:android:fe1db831f74d330c9f2c92",
+            "ios": "1:398665331927:ios:f956a3ba585236e49f2c92",
+            "web": "1:398665331927:web:c25c9a5be6a11c089f2c92"
+          }
+        }
+      }
+    }
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs22"
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

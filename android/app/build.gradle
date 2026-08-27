@@ -1,0 +1,83 @@
+plugins {
+    id "com.android.application"
+    id "com.google.gms.google-services"
+    id "org.jetbrains.kotlin.android"
+    id "com.google.firebase.crashlytics"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    namespace "com.anmol.coze"
+    compileSdk 37
+    ndkVersion flutter.ndkVersion
+
+    compileOptions {
+        coreLibraryDesugaringEnabled true
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    defaultConfig {
+        applicationId "com.anmol.coze"
+        minSdk 24
+        targetSdk 36
+        versionCode 27
+        versionName "1.1.12"
+    }
+
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}
+
+flutter {
+    source "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    implementation platform('com.google.firebase:firebase-bom:34.17.0')
+    implementation "com.google.firebase:firebase-common"
+    implementation "com.google.firebase:firebase-installations"
+    implementation "com.google.firebase:firebase-crashlytics"
+    implementation "com.google.firebase:firebase-crashlytics-ndk"
+    implementation "com.google.android.play:core-common:2.0.4"
+    implementation "com.google.android.play:app-update:2.1.0"
+    implementation "com.google.android.play:app-update-ktx:2.1.0"
+    implementation "com.google.android.play:feature-delivery:2.1.0"
+    implementation "com.google.android.play:feature-delivery-ktx:2.1.0"
+    implementation "com.google.android.play:integrity:1.6.0"
+    implementation "com.google.firebase:firebase-analytics"
+}

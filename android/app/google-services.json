@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "398665331927",
+    "project_id": "coze-anmol",
+    "storage_bucket": "coze-anmol.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398665331927:android:fe1db831f74d330c9f2c92",
+        "android_client_info": {
+          "package_name": "com.anmol.coze"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPRgYNsl6vQrTyKQEwEts37LaIFcCT3PI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
