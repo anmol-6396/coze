@@ -116,7 +116,7 @@ class CollegeBtnState extends State<CollegeBtn> {
             appBar: AppBar(
               title: const Text(
                 'College Ads',
-                style: TextStyle(color: Colors.white, fontFamily: 'Mogra'),
+                style: TextStyle(color: Colors.white),
               ),
               backgroundColor: Colors.lightBlue.shade400, // Keep blue even in dark mode
               iconTheme: const IconThemeData(color: Colors.white),

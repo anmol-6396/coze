@@ -92,7 +92,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return CupertinoPageScaffold(
         backgroundColor: isDark ? Colors.black : Colors.grey[50],
         navigationBar: CupertinoNavigationBar(
-          middle: const Text('My Profile', style: TextStyle(fontFamily: 'Mogra')),
+          middle: const Text('My Profile'),
           backgroundColor: isDark ? Colors.black87 : Colors.white,
           trailing: CupertinoButton(
             padding: EdgeInsets.zero,
@@ -106,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return Scaffold(
         backgroundColor: isDark ? Colors.black : Colors.grey[50],
         appBar: AppBar(
-          title: const Text('My Profile', style: TextStyle(fontFamily: 'Mogra', fontWeight: FontWeight.bold)),
+          title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold)),
           backgroundColor: Colors.indigo, // Keep indigo even in dark mode
           foregroundColor: Colors.white,
           centerTitle: true,
@@ -170,7 +170,6 @@ class _ProfilePageState extends State<ProfilePage> {
           style: TextStyle(
             fontSize: 24.sp,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Mogra',
             color: isDark ? Colors.white : Colors.indigo.shade900,
           ),
         ),

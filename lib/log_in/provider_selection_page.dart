@@ -116,7 +116,6 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
                       "Join the Community",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: 'Mogra',
                         fontSize: 34.sp,
                         color: Colors.white,
                         letterSpacing: 1.5,

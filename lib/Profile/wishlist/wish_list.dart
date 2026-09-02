@@ -42,7 +42,7 @@ class _WishlistPageState extends State<WishlistPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Wishlist", style: TextStyle(fontFamily: 'Mogra')),
+        title: const Text("My Wishlist"),
         centerTitle: true,
         backgroundColor: Colors.pinkAccent, // Keep pink even in dark mode
         foregroundColor: Colors.white,

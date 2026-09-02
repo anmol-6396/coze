@@ -166,7 +166,7 @@ class _PersonalDetailsPageState extends State<PersonalDetailsPage> {
         backgroundColor: Colors.transparent,
         title: Text(
           "Complete Profile",
-          style: TextStyle(fontFamily: 'Mogra', fontSize: 24.sp, color: Colors.white),
+          style: TextStyle(fontSize: 24.sp, color: Colors.white),
         ),
         centerTitle: true,
       ),

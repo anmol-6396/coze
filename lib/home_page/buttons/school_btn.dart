@@ -122,7 +122,7 @@ class SchoolBtnState extends State<SchoolBtn> {
             appBar: AppBar(
               title: const Text(
                 'School Ads',
-                style: TextStyle(color: Colors.white, fontFamily: 'Mogra'),
+                style: TextStyle(color: Colors.white),
               ),
               backgroundColor: Colors.lightBlue.shade400, // Keep blue in dark mode
               iconTheme: const IconThemeData(color: Colors.white),

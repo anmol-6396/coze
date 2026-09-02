@@ -182,7 +182,6 @@ class _LoginPageState extends State<LoginPage> {
                     widget.forceLinkMode ? "Secure Your Account" : "Welcome Back",
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: 'Mogra', 
                       fontSize: 30.sp, 
                       color: Colors.white,
                       letterSpacing: 1.2,

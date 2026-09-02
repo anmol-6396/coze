@@ -156,7 +156,6 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                 Text(
                   isSignUp ? "Create Account" : "Access Coze",
                   style: TextStyle(
-                    fontFamily: 'Mogra', 
                     fontSize: 30.sp, 
                     color: Colors.white, 
                     letterSpacing: 1.2

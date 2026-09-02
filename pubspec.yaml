@@ -92,17 +92,9 @@ flutter:
   # https://flutter.dev/to/asset-from-package
 
   fonts:
-    - family: Mogra
+    - family: Poppins
       fonts:
-        - asset: assets/fonts/Mogra-Regular.ttf
-    - family: 3Font
-      fonts:
-        - asset: assets/fonts/Mogra-Regular.ttf
-        - asset: assets/fonts/Sniglet-Regular.ttf
-        - asset: assets/fonts/Sniglet-ExtraBold.ttf
-    - family: Sniglet
-      fonts:
-        - asset: assets/fonts/Sniglet-Regular.ttf
+        - asset: assets/fonts/Poppins-Medium.ttf
 flutter_icons:
   android: true
   ios: true

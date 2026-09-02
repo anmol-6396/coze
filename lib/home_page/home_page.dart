@@ -365,7 +365,6 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
                           "Near By",
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
-                            fontFamily: 'Mogra',
                             fontSize: 18.sp,
                           ),
                         ),

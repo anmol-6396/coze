@@ -71,7 +71,7 @@ class _CityPickerPageState extends State<CityPickerPage> {
       backgroundColor: isDark ? Colors.black : const Color(0xFFF8F9FE),
       appBar: AppBar(
         title: Text("Select Location", 
-          style: TextStyle(fontFamily: 'Mogra', fontSize: 22.sp, color: isDark ? Colors.white : Colors.indigo)),
+          style: TextStyle(fontSize: 22.sp, color: isDark ? Colors.white : Colors.indigo)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,

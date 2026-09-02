@@ -71,7 +71,6 @@ class HomeBtn extends StatelessWidget {
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Mogra',
             fontSize: 18.sp,
             shadows: const [Shadow(blurRadius: 10, color: Colors.black45)],
           ),

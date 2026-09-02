@@ -110,7 +110,7 @@ class _ManualLocationSetPageState extends State<ManualLocationSetPage> {
     return Scaffold(
       backgroundColor: isDark ? Colors.black : const Color(0xFFF8F9FE),
       appBar: AppBar(
-        title: const Text("Set Area Details", style: TextStyle(fontFamily: 'Mogra')),
+        title: const Text("Set Area Details"),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
         centerTitle: true,

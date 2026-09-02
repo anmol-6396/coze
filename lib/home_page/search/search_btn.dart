@@ -177,7 +177,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.grey[50],
       appBar: AppBar(
-        title: const Text("Search Experts", style: TextStyle(fontFamily: 'Mogra')),
+        title: const Text("Search Experts"),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
         centerTitle: true,

@@ -182,7 +182,7 @@ class _OtpPageState extends State<OtpPage> {
                 SizedBox(height: 10.h),
                 Image.asset('assets/images/otp.png', height: 160.h, fit: BoxFit.contain),
                 SizedBox(height: 30.h),
-                Text("Verification", style: TextStyle(fontFamily: 'Mogra', fontSize: 32.sp, color: Colors.white)),
+                Text("Verification", style: TextStyle(fontSize: 32.sp, color: Colors.white)),
                 SizedBox(height: 8.h),
                 Text("Enter the code sent to\n${widget.identifier}", textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 16.sp, height: 1.5)),
                 SizedBox(height: 40.h),

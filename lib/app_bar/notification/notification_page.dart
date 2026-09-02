@@ -129,7 +129,7 @@ class NotificationsPage extends StatelessWidget {
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Notifications', style: TextStyle(fontFamily: 'Mogra')),
+          title: const Text('Notifications'),
           backgroundColor: Colors.deepPurple, // Keep deepPurple even in dark mode
           foregroundColor: Colors.white,
         ),

@@ -238,7 +238,7 @@ class _UserDetailsState extends State<UserDetails> {
                         SizedBox(height: 12.h),
                         Text(
                           name,
-                          style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold, fontFamily: 'Mogra'),
+                          style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
                         ),
                         // ✅ Show Fees Range Summary
                         if (user['feesChart'] != null)
@@ -543,7 +543,7 @@ class _UserDetailsState extends State<UserDetails> {
                 appBar: AppBar(
                   title: Text(
                     name.isNotEmpty ? name : "User Details",
-                    style: const TextStyle(fontFamily: 'Mogra', fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   centerTitle: true,
                   flexibleSpace: Container(
@@ -1019,7 +1019,6 @@ class _UserDetailsState extends State<UserDetails> {
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : Colors.black,
-              fontFamily: 'Mogra'
             ),
           ),
           SizedBox(height: 16.h),
@@ -1278,7 +1277,7 @@ class AllTeachersPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Faculty: $instituteName", style: const TextStyle(fontFamily: 'Mogra')),
+        title: Text("Faculty: $instituteName"),
         backgroundColor: isDark ? Colors.black87 : Colors.indigo,
         foregroundColor: Colors.white,
       ),

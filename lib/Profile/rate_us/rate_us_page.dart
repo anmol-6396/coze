@@ -65,7 +65,6 @@ class _RateUsPageState extends State<RateUsPage> {
             style: TextStyle(
               fontSize: 26.sp,
               fontWeight: FontWeight.bold,
-              fontFamily: 'Mogra',
               color: isDark ? Colors.white : Colors.indigo.shade900,
             ),
           ),
@@ -207,7 +206,7 @@ class _RateUsPageState extends State<RateUsPage> {
     if (Platform.isIOS) {
       return CupertinoPageScaffold(
         navigationBar: CupertinoNavigationBar(
-          middle: const Text("Rate Us", style: TextStyle(fontFamily: 'Mogra')),
+          middle: const Text("Rate Us"),
           backgroundColor: isDark ? Colors.black87 : Colors.white,
         ),
         child: SafeArea(child: content),
@@ -216,7 +215,7 @@ class _RateUsPageState extends State<RateUsPage> {
       return Scaffold(
         backgroundColor: isDark ? Colors.black : const Color(0xFFF8F9FE),
         appBar: AppBar(
-          title: const Text("Rate Us", style: TextStyle(fontFamily: 'Mogra', fontWeight: FontWeight.bold)),
+          title: const Text("Rate Us", style: TextStyle(fontWeight: FontWeight.bold)),
           backgroundColor: Colors.indigo,
           foregroundColor: Colors.white,
           centerTitle: true,

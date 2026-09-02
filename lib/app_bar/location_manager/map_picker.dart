@@ -20,7 +20,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pin Location', style: TextStyle(fontFamily: 'Mogra')), 
+        title: const Text('Pin Location'), 
         backgroundColor: Colors.indigo, 
         foregroundColor: Colors.white,
         actions: [

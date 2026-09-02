@@ -123,7 +123,7 @@ class HomeTutorBtnState extends State<HomeTutorBtn> {
             appBar: AppBar(
               title: const Text(
                 'Home Tutors',
-                style: TextStyle(color: Colors.white, fontFamily: 'Mogra'),
+                style: TextStyle(color: Colors.white),
               ),
               backgroundColor: Colors.lightBlue.shade400, // Keep blue in dark mode
               iconTheme: const IconThemeData(color: Colors.white),

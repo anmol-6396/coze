@@ -123,7 +123,7 @@ class HomeCoBtnState extends State<HomeCoBtn> {
             appBar: AppBar(
               title: const Text(
                 'Home Coaching',
-                style: TextStyle(color: Colors.white, fontFamily: 'Mogra'),
+                style: TextStyle(color: Colors.white),
               ),
               backgroundColor: Colors.lightBlue.shade400, // Keep blue in dark mode
               iconTheme: const IconThemeData(color: Colors.white),

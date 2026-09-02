@@ -238,7 +238,7 @@ class Nur12BtnState extends State<Nur12Btn> {
         appBar: AppBar(
           title: const Text(
             'Nursery to Class 12',
-            style: TextStyle(color: Colors.white, fontFamily: 'Mogra'),
+            style: TextStyle(color: Colors.white),
           ),
           backgroundColor: Colors.lightBlue.shade400, // Keep blue even in dark mode
           iconTheme: const IconThemeData(color: Colors.white),

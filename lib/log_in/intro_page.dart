@@ -136,7 +136,6 @@ class _IntroPageState extends State<IntroPage> with SingleTickerProviderStateMix
                                   "Empower Your Future",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontFamily: 'Sniglet',
                                     fontSize: 26.sp,
                                     fontWeight: FontWeight.bold,
                                     color: const Color(0xFF311B92),

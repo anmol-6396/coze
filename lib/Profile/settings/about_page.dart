@@ -48,7 +48,6 @@ class AboutCozePage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 32.sp,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Mogra',
                 color: isDark ? Colors.lightBlueAccent : Colors.indigo,
               ),
             ),

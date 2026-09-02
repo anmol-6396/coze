@@ -13,7 +13,7 @@ import 'splash_screen/splash_screen.dart';
 import 'firebase_options.dart'; 
 import 'Services/theme_manager.dart';
 import 'Services/notification_service.dart';
-import 'advertisement/advertise.dart'; // Centralized Ads
+import 'advertisement/advertise.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -131,13 +131,12 @@ class MyApp extends StatelessWidget {
                   colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
                   useMaterial3: true,
                   brightness: Brightness.light,
-                  fontFamily: 'Sniglet',
+                  fontFamily: 'Poppins',
                   snackBarTheme: const SnackBarThemeData(
                     behavior: SnackBarBehavior.floating,
                   ),
                   appBarTheme: AppBarTheme(
                     titleTextStyle: TextStyle(
-                      fontFamily: 'Mogra',
                       fontSize: 22.sp,
                       color: Colors.white,
                     ),
@@ -150,13 +149,12 @@ class MyApp extends StatelessWidget {
                   ),
                   useMaterial3: true,
                   brightness: Brightness.dark,
-                  fontFamily: 'Sniglet',
+                  fontFamily: 'Poppins',
                   snackBarTheme: const SnackBarThemeData(
                     behavior: SnackBarBehavior.floating,
                   ),
                   appBarTheme: AppBarTheme(
                     titleTextStyle: TextStyle(
-                      fontFamily: 'Mogra',
                       fontSize: 22.sp,
                       color: Colors.white,
                     ),

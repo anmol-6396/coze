@@ -205,7 +205,6 @@ class _UserBoxState extends State<UserBox> {
                   color: Colors.white,
                   fontSize: 9.sp,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Mogra',
                 ),
               ),
             ),
