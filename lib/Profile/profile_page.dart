@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,6 +8,7 @@ import 'package:coze/Profile/settings/setting_page.dart';
 import 'package:coze/Profile/help_support/help_page.dart';
 import 'package:coze/Profile/rate_us/rate_us_page.dart';
 import 'package:coze/Profile/wishlist/wish_list.dart';
+import 'package:coze/Services/app_action_helper.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -31,25 +30,31 @@ class _ProfilePageState extends State<ProfilePage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final doc = await FirebaseFirestore.instance
-        .collection("users")
-        .doc(user.uid)
-        .get();
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .get();
 
-    if (doc.exists) {
-      setState(() {
-        userProfile = doc.data()!;
-      });
+      if (!mounted) return;
+
+      if (doc.exists && doc.data() != null) {
+        setState(() {
+          userProfile = doc.data()!;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading profile: $e");
     }
   }
 
   Future<void> _openEditProfile() async {
     final updatedData = await Navigator.push(
       context,
-      Platform.isIOS
-          ? CupertinoPageRoute(builder: (_) => const EditProfilePage())
-          : MaterialPageRoute(builder: (_) => const EditProfilePage()),
+      MaterialPageRoute(builder: (_) => const EditProfilePage()),
     );
+
+    if (!mounted) return;
 
     if (updatedData != null && updatedData is Map<String, dynamic>) {
       setState(() {
@@ -62,65 +67,98 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final content = ListView(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-      children: [
-        // 👤 Profile Header
-        _buildProfileHeader(isDark),
-        
-        SizedBox(height: 32.h),
-
-        // 📋 Information Section
-        _buildSectionTitle('Personal Information', isDark),
-        SizedBox(height: 12.h),
-        _buildInfoGrid(isDark),
-
-        SizedBox(height: 32.h),
-
-        // ⚡ Quick Actions Section
-        _buildSectionTitle('Quick Actions', isDark),
-        SizedBox(height: 16.h),
-        _buildActionGrid(context, isDark),
-
-        SizedBox(height: 100.h), // Increased bottom padding
-      ],
-    );
-
-    if (Platform.isIOS) {
-      return CupertinoPageScaffold(
-        backgroundColor: isDark ? Colors.black : Colors.grey[50],
-        navigationBar: CupertinoNavigationBar(
-          middle: const Text('My Profile'),
-          backgroundColor: isDark ? Colors.black87 : Colors.white,
-          trailing: CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: _openEditProfile,
-            child: Icon(CupertinoIcons.pencil_circle_fill, size: 28.sp),
-          ),
-        ),
-        child: SafeArea(child: content),
-      );
-    } else {
+    if (user == null) {
       return Scaffold(
         backgroundColor: isDark ? Colors.black : Colors.grey[50],
         appBar: AppBar(
           title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold)),
-          backgroundColor: Colors.indigo, // Keep indigo even in dark mode
+          backgroundColor: Colors.indigo,
           foregroundColor: Colors.white,
           centerTitle: true,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.edit_note, size: 28.sp),
-              onPressed: _openEditProfile,
-            ),
-          ],
-          elevation: 0,
         ),
-        body: content,
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(24.r),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.account_circle, size: 80.sp, color: Colors.indigo),
+                SizedBox(height: 16.h),
+                Text(
+                  "Guest User",
+                  style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  "Please log in to manage your profile, view wishlist, and edit account settings.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                ),
+                SizedBox(height: 24.h),
+                ElevatedButton(
+                  onPressed: () async {
+                    final authed = await AppActionHelper.requireAuth(context);
+                    if (authed && mounted) {
+                      _loadUserProfile();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    foregroundColor: Colors.white,
+                    minimumSize: Size(200.w, 50.h),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  ),
+                  child: Text("LOGIN / SIGN UP", style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
+
+    return Scaffold(
+      backgroundColor: isDark ? Colors.black : Colors.grey[50],
+      appBar: AppBar(
+        title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.indigo,
+        foregroundColor: Colors.white,
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.edit_note, size: 28.sp),
+            onPressed: _openEditProfile,
+          ),
+        ],
+        elevation: 0,
+      ),
+      body: ListView(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+        children: [
+          // 👤 Profile Header
+          _buildProfileHeader(isDark),
+          
+          SizedBox(height: 32.h),
+
+          // 📋 Information Section
+          _buildSectionTitle('Personal Information', isDark),
+          SizedBox(height: 12.h),
+          _buildInfoGrid(isDark),
+
+          SizedBox(height: 32.h),
+
+          // ⚡ Quick Actions Section
+          _buildSectionTitle('Quick Actions', isDark),
+          SizedBox(height: 16.h),
+          _buildActionGrid(context, isDark),
+
+          SizedBox(height: 100.h),
+        ],
+      ),
+    );
   }
 
   Widget _buildProfileHeader(bool isDark) {
@@ -145,13 +183,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 radius: 60.r,
                 backgroundColor: isDark ? Colors.grey[900] : Colors.white,
                 backgroundImage: (userProfile['image'] != null &&
-                  userProfile['image'].toString().isNotEmpty)
-                  ? NetworkImage(userProfile['image'].toString())
-                  : null,
-              child: (userProfile['image'] == null ||
-                  userProfile['image'].toString().isEmpty)
-                  ? Icon(Icons.person, size: 60.r, color: Colors.indigo.shade200)
-                  : null,
+                        userProfile['image'].toString().isNotEmpty)
+                    ? NetworkImage(userProfile['image'].toString())
+                    : null,
+                child: (userProfile['image'] == null ||
+                        userProfile['image'].toString().isEmpty)
+                    ? Icon(Icons.person, size: 60.r, color: Colors.indigo.shade200)
+                    : null,
               ),
             ),
             GestureDetector(
@@ -177,11 +215,10 @@ class _ProfilePageState extends State<ProfilePage> {
           Text(
             "User ID: #${userProfile['user_id']}",
             style: TextStyle(
-              fontSize: 14.sp, 
-              color: Colors.indigo.shade300, 
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2
-            ),
+                fontSize: 14.sp,
+                color: Colors.indigo.shade300,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2),
           ),
         Text(
           userProfile['email'] ?? 'email@example.com',
@@ -217,8 +254,8 @@ class _ProfilePageState extends State<ProfilePage> {
           const Divider(),
           _infoRow(Icons.wc, 'Gender', userProfile['gender'] ?? 'Not set', isDark),
           const Divider(),
-          _infoRow(Icons.cake_outlined, 'Birthday', 
-            userProfile['dob'] != null ? _formatDate(userProfile['dob']) : 'Not set', isDark),
+          _infoRow(Icons.cake_outlined, 'Birthday',
+              userProfile['dob'] != null ? _formatDate(userProfile['dob']) : 'Not set', isDark),
         ],
       ),
     );
@@ -236,12 +273,16 @@ class _ProfilePageState extends State<ProfilePage> {
             Text(label, style: TextStyle(fontSize: 13.sp, color: Colors.grey)),
             const Spacer(),
             Text(
-              value, 
+              value,
               style: TextStyle(
-                fontSize: 14.sp, 
-                fontWeight: FontWeight.bold, 
-                color: value == 'Not Verified' ? Colors.red : (value == 'Verified' ? Colors.green : (isDark ? Colors.white : Colors.black87))
-              )
+                fontSize: 14.sp,
+                fontWeight: FontWeight.bold,
+                color: value == 'Not Verified'
+                    ? Colors.red
+                    : (value == 'Verified'
+                        ? Colors.green
+                        : (isDark ? Colors.white : Colors.black87)),
+              ),
             ),
           ],
         ),
@@ -258,11 +299,24 @@ class _ProfilePageState extends State<ProfilePage> {
       crossAxisSpacing: 16.w,
       childAspectRatio: 1.4,
       children: [
-        _actionCard(context, Icons.favorite, 'Wishlist', Colors.pink, WishlistPage(uid: FirebaseAuth.instance.currentUser?.uid ?? ''), isDark),
+        _actionCard(
+          context,
+          Icons.favorite,
+          'Wishlist',
+          Colors.pink,
+          WishlistPage(uid: FirebaseAuth.instance.currentUser?.uid ?? ''),
+          isDark,
+        ),
         _actionCard(context, Icons.settings_suggest, 'Settings', Colors.purple, const SettingsPage(), isDark),
         _actionCard(context, Icons.support_agent, 'Help Center', Colors.teal, const HelpPage(), isDark),
         _actionCard(context, Icons.star_rate, 'Rate Us', Colors.amber, const RateUsPage(), isDark),
-        _actionCard(context, Icons.share, 'Invite Friend', Colors.green, null, isDark, 
+        _actionCard(
+          context,
+          Icons.share,
+          'Invite Friend',
+          Colors.green,
+          null,
+          isDark,
           onTap: () {
             Share.share(
               "Hey! Check out Coze - Connect Our Zone of Experts. Find jobs, tutors, and services easily! Download now from Play Store: https://play.google.com/store/apps/details?id=com.anmol.coze&pcampaignid=web_share",
@@ -276,11 +330,12 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _actionCard(BuildContext context, IconData icon, String label, Color color, Widget? destination, bool isDark, {VoidCallback? onTap}) {
     return InkWell(
-      onTap: onTap ?? () {
-        if (destination != null) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
-        }
-      },
+      onTap: onTap ??
+          () {
+            if (destination != null) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
+            }
+          },
       borderRadius: BorderRadius.circular(20.r),
       child: Container(
         padding: EdgeInsets.all(12.r),

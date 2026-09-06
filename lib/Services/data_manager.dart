@@ -28,6 +28,69 @@ class DataManager {
           .get();
       final blockedIds = blockedSnap.docs.map((d) => d.id).toSet();
 
+      // ✅ 1. Fetch from global 'ads' collection (Primary Teacher App collection)
+      try {
+        final adsSnap = await FirebaseFirestore.instance.collection("ads").get();
+        for (var doc in adsSnap.docs) {
+          final data = doc.data();
+          final parentId = data['teacherId']?.toString() ?? data['uid']?.toString() ?? '';
+
+          if (blockedIds.contains(parentId)) continue;
+          if (blockedIds.contains(doc.id)) continue;
+
+          final expiryStr = data['expiryDate'];
+          if (expiryStr != null) {
+            final expiry = expiryStr is Timestamp
+                ? expiryStr.toDate()
+                : DateTime.tryParse(expiryStr.toString());
+            if (expiry != null && DateTime.now().isAfter(expiry)) {
+              continue;
+            }
+          }
+
+          final avatarUrl = data['avatar'] ?? data['avatarUrl'] ?? data['imageUrl'] ?? data['profilePic'];
+          final plan = data['selectedPlan']?.toString() ?? '';
+
+          double distance = 999999;
+          if (currentPosition != null && data['location'] != null) {
+            if (data['location'] is Map) {
+              final uLoc = data['location'] as Map;
+              final lat = uLoc['lat'] ?? uLoc['latitude'];
+              final lng = uLoc['lng'] ?? uLoc['longitude'];
+              if (lat != null && lng != null) {
+                distance = Geolocator.distanceBetween(
+                  currentPosition.latitude,
+                  currentPosition.longitude,
+                  (lat as num).toDouble(),
+                  (lng as num).toDouble(),
+                );
+              }
+            }
+          }
+
+          int radiusLimit = 10000;
+          if (plan.contains('Elite')) {
+            radiusLimit = 50000;
+          } else if (plan.contains('Pro')) {
+            radiusLimit = 25000;
+          }
+
+          if (distance > radiusLimit) continue;
+
+          docs.add({
+            ...data,
+            "id": doc.id,
+            "parentId": parentId,
+            "type": data['formType'] ?? data['type'] ?? 'hometutor',
+            "avatarUrl": avatarUrl,
+            "calculatedDistance": distance,
+          });
+        }
+      } catch (e) {
+        debugPrint("Error fetching global ads: $e");
+      }
+
+      // ✅ 2. Fetch from legacy subcollections
       final subCollections = [
         "hometutor",
         "homecoaching",

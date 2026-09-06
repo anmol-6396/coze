@@ -63,5 +63,7 @@ analysis*.txt
 upload_certificate.pem
 
 # Android build artifacts
+/android/build/
 /android/app/build/
 /android/.gradle/
+._*

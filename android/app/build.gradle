@@ -81,3 +81,15 @@ dependencies {
     implementation "com.google.android.play:integrity:1.6.0"
     implementation "com.google.firebase:firebase-analytics"
 }
+
+tasks.configureEach { task ->
+    if (task.name.contains("Resource") || task.name.contains("package") || task.name.contains("merge") || task.name.contains("parse")) {
+        task.doFirst {
+            fileTree(dir: layout.buildDirectory, include: "**/._*").each { file ->
+                if (file.exists()) {
+                    file.delete()
+                }
+            }
+        }
+    }
+}

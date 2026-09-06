@@ -19,11 +19,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final effectiveBgColor = backgroundColor; // Keep original color regardless of theme
+    final effectiveBgColor = backgroundColor;
 
     if (Platform.isIOS) {
-      // ✅ iOS style AppBar
       return CupertinoNavigationBar(
         middle: Text(
           title,
@@ -33,14 +31,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             color: Colors.white,
           ),
         ),
-        backgroundColor: effectiveBgColor.withOpacity(0.9),
+        backgroundColor: effectiveBgColor.withValues(alpha: 0.9),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: actions ?? [],
         ),
       );
     } else {
-      // ✅ Android style AppBar
       return AppBar(
         title: Text(
           title,

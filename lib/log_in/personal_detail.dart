@@ -13,7 +13,8 @@ import 'package:coze/Services/permission_helper.dart';
 import 'package:coze/Services/id_manager.dart';
 
 class PersonalDetailsPage extends StatefulWidget {
-  const PersonalDetailsPage({super.key});
+  final bool isGuestPrompt;
+  const PersonalDetailsPage({super.key, this.isGuestPrompt = false});
 
   @override
   State<PersonalDetailsPage> createState() => _PersonalDetailsPageState();
@@ -130,11 +131,15 @@ class _PersonalDetailsPageState extends State<PersonalDetailsPage> {
       await FirebaseFirestore.instance.collection("users").doc(user.uid).set(data, SetOptions(merge: true));
 
       if (!mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const BottomNav()),
-            (route) => false,
-      );
+      if (widget.isGuestPrompt) {
+        Navigator.pop(context, true);
+      } else {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const BottomNav()),
+          (route) => false,
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

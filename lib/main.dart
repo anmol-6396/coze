@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -111,58 +110,44 @@ class MyApp extends StatelessWidget {
           minTextAdapt: true,
           splitScreenMode: true,
           builder: (context, child) {
-            // Determine platform for App style
-            final bool isIOS = Theme.of(context).platform == TargetPlatform.iOS;
-            
-            if (isIOS) {
-              return CupertinoApp(
-                debugShowCheckedModeBanner: false,
-                theme: CupertinoThemeData(
-                  brightness: mode == ThemeMode.dark ? Brightness.dark : Brightness.light,
-                  primaryColor: CupertinoColors.activeBlue,
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              themeMode: mode,
+              theme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+                useMaterial3: true,
+                brightness: Brightness.light,
+                fontFamily: 'Poppins',
+                snackBarTheme: const SnackBarThemeData(
+                  behavior: SnackBarBehavior.floating,
                 ),
-                home: child,
-              );
-            } else {
-              return MaterialApp(
-                debugShowCheckedModeBanner: false,
-                themeMode: mode,
-                theme: ThemeData(
-                  colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-                  useMaterial3: true,
-                  brightness: Brightness.light,
-                  fontFamily: 'Poppins',
-                  snackBarTheme: const SnackBarThemeData(
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                  appBarTheme: AppBarTheme(
-                    titleTextStyle: TextStyle(
-                      fontSize: 22.sp,
-                      color: Colors.white,
-                    ),
+                appBarTheme: AppBarTheme(
+                  titleTextStyle: TextStyle(
+                    fontSize: 22.sp,
+                    color: Colors.white,
                   ),
                 ),
-                darkTheme: ThemeData(
-                  colorScheme: ColorScheme.fromSeed(
-                    seedColor: Colors.deepPurple,
-                    brightness: Brightness.dark,
-                  ),
-                  useMaterial3: true,
+              ),
+              darkTheme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.deepPurple,
                   brightness: Brightness.dark,
-                  fontFamily: 'Poppins',
-                  snackBarTheme: const SnackBarThemeData(
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                  appBarTheme: AppBarTheme(
-                    titleTextStyle: TextStyle(
-                      fontSize: 22.sp,
-                      color: Colors.white,
-                    ),
+                ),
+                useMaterial3: true,
+                brightness: Brightness.dark,
+                fontFamily: 'Poppins',
+                snackBarTheme: const SnackBarThemeData(
+                  behavior: SnackBarBehavior.floating,
+                ),
+                appBarTheme: AppBarTheme(
+                  titleTextStyle: TextStyle(
+                    fontSize: 22.sp,
+                    color: Colors.white,
                   ),
                 ),
-                home: child,
-              );
-            }
+              ),
+              home: child,
+            );
           },
           child: const SplashScreen(),
         );

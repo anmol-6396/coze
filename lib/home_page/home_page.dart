@@ -28,7 +28,7 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
   List<Map<String, dynamic>> get _userData => DataManager.instance.userData;
 
   final ScrollController _scrollController = ScrollController();
-  final currentUserUid = FirebaseAuth.instance.currentUser!.uid;
+  final currentUserUid = FirebaseAuth.instance.currentUser?.uid ?? '';
 
   // ✅ Native Ad Variables Managed via advertise.dart
   final Map<int, NativeAd> _nativeAdsMap = {};
@@ -94,6 +94,7 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
     for (var ad in _nativeAdsMap.values) {
       ad.dispose();
     }
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -104,9 +105,9 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
   void _loadNativeAds() {
     int crossAxisCount;
     final screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth < 350) {
+    if (screenWidth < 600) {
       crossAxisCount = 1;
-    } else if (screenWidth < 600) {
+    } else if (screenWidth < 900) {
       crossAxisCount = 2;
     } else {
       crossAxisCount = 3;
@@ -151,7 +152,6 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
       
       // If silent (auto-detect on login/refresh) and permission not granted, don't ask
       if (silent && (permission == LocationPermission.denied || permission == LocationPermission.deniedForever)) {
-        // Just fetch data without position (or use a default)
         await DataManager.instance.fetchAllData(currentPosition: null);
         if (mounted) {
           _loadNativeAds();
@@ -179,8 +179,10 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
       await prefs.setDouble("user_lat", position.latitude);
       await prefs.setDouble("user_lng", position.longitude);
 
-      setState(() => _currentPosition = position);
-      // ✅ Refresh data with new position to get correct distances
+      if (mounted) {
+        setState(() => _currentPosition = position);
+      }
+      
       await DataManager.instance.fetchAllData(currentPosition: position);
       if (mounted) {
         _loadNativeAds();
@@ -189,7 +191,9 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
     } catch (e) {
       debugPrint("Location error: $e");
     } finally {
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -203,9 +207,11 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
     }
     _nativeAdsMap.clear();
 
-    setState(() {
-      _loading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _loading = true;
+      });
+    }
 
     await DataManager.instance.fetchAllData(currentPosition: _currentPosition);
 
@@ -218,42 +224,46 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
   }
 
   void _scrollToTop() {
-    _scrollController.animateTo(
-      0,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeOut,
-    );
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutCubic,
+      );
+    }
   }
 
-  /// ✅ Build Chunks of Grid with Native Ads
+  /// ✅ Build Chunks of List with Native Ads (1 card per line)
   List<Widget> _buildGridWithAds(int crossAxisCount, double gridSpacing, double screenWidth) {
     List<Widget> slivers = [];
-    int itemsPerChunk = crossAxisCount * 5; // 5 rows
+    int itemsPerChunk = crossAxisCount * 5; // 5 items
 
     for (int i = 0; i < _userData.length; i += itemsPerChunk) {
       int end = (i + itemsPerChunk < _userData.length) ? i + itemsPerChunk : _userData.length;
       List<Map<String, dynamic>> chunk = _userData.sublist(i, end);
 
-      // Add Grid Chunk
+      // Add Grid / List Chunk
       slivers.add(
         SliverPadding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
           sliver: SliverGrid(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: gridSpacing,
               mainAxisSpacing: gridSpacing,
-              childAspectRatio: screenWidth < 600 ? 0.78 : 0.95, // Reverted to previous balanced ratio
+              childAspectRatio: screenWidth < 600 ? 2.1 : 2.8,
             ),
             delegate: SliverChildBuilderDelegate(
-                  (context, index) {
+              (context, index) {
                 final user = chunk[index];
                 double? distance = user['calculatedDistance'];
                 if (distance == 999999) distance = null;
 
                 return InkWell(
+                  borderRadius: BorderRadius.circular(16.r),
                   onTap: () {
                     AdvertiseManager().showInterstitialAd(() async {
+                      if (!mounted) return;
                       await Navigator.push(
                         context,
                         Platform.isIOS
@@ -272,7 +282,6 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
                                 ),
                               ),
                       );
-                      // Refresh when coming back to update wishlist hearts
                       if (mounted) setState(() {});
                     });
                   },
@@ -289,7 +298,7 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
         ),
       );
 
-      // Add Ad if not at the end
+      // Add Native Ad Banner if not at end
       if (end < _userData.length) {
         int adIndex = i ~/ itemsPerChunk;
         final isDark = ThemeManager.instance.isDarkMode;
@@ -297,15 +306,54 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
           SliverToBoxAdapter(
             child: Container(
               margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-              height: 100.h, // Adjusted height for NativeTemplate small
+              height: 105.h,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12.r),
-                color: isDark ? Colors.grey.shade900 : Colors.white,
-                boxShadow: [BoxShadow(color: isDark ? Colors.black54 : Colors.black12, blurRadius: 4.r)],
+                borderRadius: BorderRadius.circular(16.r),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.grey.shade100,
+                border: Border.all(
+                  color: isDark ? Colors.white10 : Colors.grey.shade300,
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? Colors.black.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8.r,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: _nativeAdsMap.containsKey(adIndex)
-                  ? AdWidget(ad: _nativeAdsMap[adIndex]!)
-                  : Center(child: Text("Ad Loading...", style: TextStyle(fontSize: 12.sp))),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16.r),
+                child: _nativeAdsMap.containsKey(adIndex)
+                    ? AdWidget(ad: _nativeAdsMap[adIndex]!)
+                    : Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 14.w,
+                              height: 14.w,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.blueAccent,
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              "Loading Ad...",
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                color: isDark ? Colors.white54 : Colors.black45,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+              ),
             ),
           ),
         );
@@ -320,100 +368,232 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
 
     int crossAxisCount;
     final screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth < 350) {
-      crossAxisCount = 1;
-    } else if (screenWidth < 600) {
+    if (screenWidth < 600) {
+      crossAxisCount = 1; // 1 item per row on mobile!
+    } else if (screenWidth < 900) {
       crossAxisCount = 2;
     } else {
       crossAxisCount = 3;
     }
 
-    final gridSpacing = 12.w;
-
-    final isDark = ThemeManager.instance.isDarkMode;
+    final gridSpacing = 10.h;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0D0E12) : const Color(0xFFF8FAFC),
       appBar: const MainAppBar(),
       body: (_loading || (DataManager.instance.isLoading && _userData.isEmpty))
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(color: Colors.blueAccent),
+                  SizedBox(height: 16.h),
+                  Text(
+                    "Discovering Experts Near You...",
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: isDark ? Colors.white60 : Colors.black54,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            )
           : Stack(
               children: [
-                Column(
-                  children: [
-                    Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: _refreshData,
-                        child: CustomScrollView(
-                          controller: _scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          slivers: [
-                            const SliverToBoxAdapter(
-                              child: Padding(
-                                padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
-                                child: SearchPage(),
+                RefreshIndicator(
+                  color: Colors.blueAccent,
+                  backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  onRefresh: _refreshData,
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
+                    slivers: [
+                      // Search Bar Section
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 8.h),
+                          child: const SearchPage(),
+                        ),
+                      ),
+
+                      // Quick Category Grid
+                      const SliverToBoxAdapter(child: MergedRows()),
+
+                      // Top Native Ad Banner
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 4.h),
+                          child: const NativeAdBanner(height: 100),
+                        ),
+                      ),
+
+                      // "Near By" Header Section
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                                decoration: BoxDecoration(
+                                  color: Colors.blueAccent.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(20.r),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.location_on_rounded,
+                                      color: Colors.blueAccent,
+                                      size: 16.sp,
+                                    ),
+                                    SizedBox(width: 4.w),
+                                    Text(
+                                      "Near By",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 15.sp,
+                                        color: isDark ? Colors.white : Colors.black87,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SliverToBoxAdapter(child: MergedRows()),
-                            // ✅ Top Native Ad above "Near By"
-                            const SliverToBoxAdapter(child: NativeAdBanner(height: 100)),
-                            SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 16.w, top: 8.h),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Near By",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 18.sp,
+                              SizedBox(width: 8.w),
+                              if (_userData.isNotEmpty)
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? Colors.white10 : Colors.grey.shade200,
+                                    borderRadius: BorderRadius.circular(10.r),
+                                  ),
+                                  child: Text(
+                                    "${_userData.length}",
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blueAccent,
+                                    ),
+                                  ),
+                                ),
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: Container(
+                                  height: 1.h,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        isDark ? Colors.white24 : Colors.grey.shade300,
+                                        Colors.transparent,
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        SizedBox(width: 8.w),
-                        Expanded(
-                          child: Divider(
-                            thickness: 1.h,
-                            color: isDark ? Colors.white30 : Colors.black,
-                            endIndent: 10.w,
+                      ),
+
+                      // Empty or Content Grid
+                      if (_userData.isEmpty)
+                        SliverToBoxAdapter(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 40.h, horizontal: 24.w),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(20.r),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.blueAccent.withValues(alpha: 0.1),
+                                  ),
+                                  child: Icon(
+                                    Icons.search_off_rounded,
+                                    size: 48.sp,
+                                    color: Colors.blueAccent,
+                                  ),
+                                ),
+                                SizedBox(height: 16.h),
+                                Text(
+                                  "No Experts Found Nearby",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark ? Colors.white : Colors.black87,
+                                  ),
+                                ),
+                                SizedBox(height: 6.h),
+                                Text(
+                                  "Try pulling down to refresh or adjusting your search filters.",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: isDark ? Colors.white54 : Colors.black54,
+                                  ),
+                                ),
+                                SizedBox(height: 16.h),
+                                OutlinedButton.icon(
+                                  onPressed: _refreshData,
+                                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                                  label: const Text("Refresh List"),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.blueAccent,
+                                    side: const BorderSide(color: Colors.blueAccent),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20.r),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                        )
+                      else
+                        ..._buildGridWithAds(crossAxisCount, gridSpacing, screenWidth),
+
+                      SliverToBoxAdapter(child: SizedBox(height: 90.h)),
+                    ],
+                  ),
+                ),
+
+                // Floating Scroll to Top Action Button
+                Positioned(
+                  bottom: 24.h,
+                  right: 20.w,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blueAccent.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          spreadRadius: 2,
                         ),
                       ],
                     ),
-                  ),
-                ),
-                if (_userData.isEmpty)
-                   SliverToBoxAdapter(
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 20.h),
-                        child: Text(
-                          "No Ads Found",
-                          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  )
-                else
-                    ..._buildGridWithAds(crossAxisCount, gridSpacing, screenWidth),
-                            SliverToBoxAdapter(child: SizedBox(height: 80.h)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Positioned(
-                  bottom: 20.h,
-                  right: 20.w,
-                  child: SizedBox(
-                    width: 45.w,
-                    height: 45.h,
-                    child: FloatingActionButton(
-                      heroTag: "btn_up",
-                      onPressed: _scrollToTop,
-                      backgroundColor: isDark ? Colors.indigo.withValues(alpha: 0.9) : Colors.blue.withValues(alpha: 0.9),
-                      elevation: 6,
+                    child: Material(
+                      color: Colors.blueAccent,
                       shape: const CircleBorder(),
-                      child: Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 28.sp),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: _scrollToTop,
+                        child: SizedBox(
+                          width: 46.w,
+                          height: 46.w,
+                          child: Icon(
+                            Icons.keyboard_arrow_up_rounded,
+                            color: Colors.white,
+                            size: 28.sp,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -422,4 +602,3 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
     );
   }
 }
-

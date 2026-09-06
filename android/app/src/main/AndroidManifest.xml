@@ -60,12 +60,6 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
-        <!-- Razorpay Restricted UPI Apps Support -->
-        <package android:name="com.google.android.apps.nbu.paisa.user" /> <!-- GPay -->
-        <package android:name="com.phonepe.app" /> <!-- PhonePe -->
-        <package android:name="net.one97.paytm" /> <!-- Paytm -->
-        <package android:name="com.naviapp" /> <!-- Navi -->
-
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>

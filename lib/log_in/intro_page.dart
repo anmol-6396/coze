@@ -4,6 +4,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:flutter/services.dart';
 import 'login_page.dart';
 import 'provider_selection_page.dart';
+import 'package:coze/bottom_nav_bar/bottom_nav_bar.dart';
 
 class IntroPage extends StatefulWidget {
   const IntroPage({super.key});
@@ -45,10 +46,11 @@ class _IntroPageState extends State<IntroPage> with SingleTickerProviderStateMix
     return Scaffold(
 
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(10.h),
+        preferredSize: Size.fromHeight(15.h),
         child: AppBar(
           elevation: 0,
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFF6B52B6),
+          automaticallyImplyLeading: false,
         ),
       ),
       body: Container(

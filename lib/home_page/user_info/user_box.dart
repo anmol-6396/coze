@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../Services/format_helper.dart';
@@ -70,17 +69,18 @@ class _UserBoxState extends State<UserBox> {
     final rawType = widget.user['type'] ?? 'User';
     final typeLabel = _getTypeLabel(rawType);
     
-    // ✅ Extract and group specializations
+    // Extract specializations
     final subjects = widget.user['subjects'] ?? widget.user['subject'] ?? widget.user['Subject'];
     final skills = widget.user['skills'] ?? widget.user['skill'];
     final board = widget.user['board'];
     
     final detailSummary = _getSpecializationSummary(subjects ?? skills ?? board, rawType);
 
-    final classes = widget.user['class'];
+    final rawClasses = widget.user['classes'] ?? widget.user['class'];
+    final classDisplay = _formatClassDisplay(rawClasses);
+
     final location = widget.user['location'] as Map<String, dynamic>?;
     
-    // ✅ Improved Location Parsing with Fallbacks
     final String city = (location?['city'] ?? widget.user['city'] ?? location?['locality'] ?? '').toString();
     final String area = (location?['subLocality'] ?? widget.user['subLocality'] ?? location?['landmark'] ?? widget.user['landmark'] ?? '').toString();
 
@@ -90,200 +90,249 @@ class _UserBoxState extends State<UserBox> {
     final isElite = selectedPlan.contains('Elite');
     final isPro = selectedPlan.contains('Pro');
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        // Main Card
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(16.r),
-            boxShadow: [
-              BoxShadow(
-                color: isDark ? Colors.white10 : Colors.black12,
-                blurRadius: 8.r,
-                offset: const Offset(0, 4),
-              ),
-            ],
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black38 : Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8.r,
+            offset: const Offset(0, 3),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey.shade200,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Left Side: Avatar with Plan Badge
+          Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(height: 15.h), // Reduced from 15
-              Center(
+              Container(
+                width: 58.w,
+                height: 58.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isElite
+                        ? Colors.orange
+                        : isPro
+                            ? Colors.purple
+                            : Colors.blueAccent.withValues(alpha: 0.3),
+                    width: 2,
+                  ),
+                ),
                 child: CircleAvatar(
-                  radius: 30.r, // Reduced from 32
+                  radius: 27.r,
                   backgroundImage: _resolveImage(avatarUrl),
                   backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
                 ),
               ),
-              SizedBox(height: 4.h), // Reduced from 6
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      typeLabel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 11.sp,
-                        color: isDark ? Colors.lightBlueAccent : (Platform.isIOS ? CupertinoColors.activeBlue : Colors.deepPurple),
+              if (isElite || isPro) ...[
+                SizedBox(height: 3.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
+                  decoration: BoxDecoration(
+                    color: isElite ? Colors.orange : Colors.purple,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isElite ? "Elite" : "Pro",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ),
-                  _ratingSmall(),
-                ],
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
-              ),
-              if (detailSummary.isNotEmpty)
-                Padding(
-                  padding: EdgeInsets.only(top: 2.h),
-                  child: Text(
-                    detailSummary,
-                    style: TextStyle(fontSize: 11.sp, color: Colors.indigo, fontWeight: FontWeight.w600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                      SizedBox(width: 1.w),
+                      Text("👑", style: TextStyle(fontSize: 7.sp)),
+                    ],
                   ),
                 ),
-              // ✅ Show Fees Range (Restricted to 1 line)
-              if (widget.user['feesChart'] != null)
-                Padding(
-                  padding: EdgeInsets.only(top: 2.h),
-                  child: Text(
-                    FormatHelper.getFeesRange(Map<String, dynamic>.from(widget.user['feesChart'])),
-                    style: TextStyle(fontSize: 12.sp, color: Colors.green.shade700, fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              const Spacer(),
-              if (area.isNotEmpty || city.isNotEmpty)
+              ],
+            ],
+          ),
+
+          SizedBox(width: 10.w),
+
+          // Right Side: All Details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header Row: Type Badge + Rating + Distance + Wishlist
                 Row(
                   children: [
-                    Icon(Icons.place, size: 12.sp, color: Colors.grey),
-                    SizedBox(width: 2.w),
-                    Expanded(
-                      child: Text(
-                        "$area${area.isNotEmpty && city.isNotEmpty ? ", " : ""}$city",
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: isDark ? Colors.white60 : Colors.black54,
+                    Flexible(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.5.h),
+                        decoration: BoxDecoration(
+                          color: (isDark ? Colors.blueAccent : Colors.indigo).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(6.r),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        child: Text(
+                          typeLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 9.5.sp,
+                            color: isDark ? Colors.lightBlueAccent : Colors.indigo,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 4.w),
+                    _ratingSmall(),
+                    if (widget.distance != null) ...[
+                      SizedBox(width: 4.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.5.h),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade600.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text(
+                          _formatDistance(widget.distance!),
+                          style: TextStyle(
+                            color: Colors.green.shade700,
+                            fontSize: 8.5.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                    SizedBox(width: 4.w),
+                    // Heart Wishlist
+                    GestureDetector(
+                      onTap: () async {
+                        final adId = widget.user['id']?.toString() ?? '';
+                        if (adId.isEmpty) return;
+
+                        setState(() {
+                          isWishlisted = !isWishlisted;
+                        });
+
+                        final ref = FirebaseFirestore.instance
+                            .collection("users")
+                            .doc(widget.uid)
+                            .collection("wishlist")
+                            .doc(adId);
+
+                        try {
+                          if (isWishlisted) {
+                            await ref.set({
+                              ...widget.user,
+                              "id": adId,
+                              "parentId": widget.user['parentId'],
+                              "wishlistedAt": DateTime.now().toIso8601String(),
+                            });
+                          } else {
+                            await ref.delete();
+                          }
+                        } catch (e) {
+                          debugPrint("Error updating wishlist: $e");
+                        }
+                      },
+                      child: Icon(
+                        isWishlisted ? Icons.favorite : Icons.favorite_border,
+                        size: 18.sp,
+                        color: isWishlisted ? Colors.red : (isDark ? Colors.white60 : Colors.grey.shade600),
                       ),
                     ),
                   ],
                 ),
-            ],
-          ),
-        ),
 
-        // Distance Badge at Top Left Corner
-        if (widget.distance != null)
-          Positioned(
-            top: 8.h,
-            left: 8.w,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
-              decoration: BoxDecoration(
-                color: Colors.green.shade600.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(6.r),
-              ),
-              child: Text(
-                _formatDistance(widget.distance!),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 9.sp,
-                  fontWeight: FontWeight.bold,
+                SizedBox(height: 2.h),
+
+                // Name
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
                 ),
-              ),
-            ),
-          ),
 
-        // Plan Badge at Top Right Corner of the Card
-        if (isElite || isPro)
-          Positioned(
-            top: 8.h,
-            right: 8.w,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
-              decoration: BoxDecoration(
-                color: isElite ? Colors.orange : Colors.purple,
-                borderRadius: BorderRadius.circular(6.r),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+                // Specialization / Subjects / Skills
+                if (detailSummary.isNotEmpty)
                   Text(
-                    isElite ? "Elite" : "Pro",
+                    detailSummary,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 9.sp,
+                      fontSize: 10.5.sp,
+                      color: isDark ? Colors.blue.shade300 : Colors.indigo,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                // Class Info
+                if (classDisplay.isNotEmpty)
+                  Text(
+                    classDisplay,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+
+                // Fees Range
+                if (widget.user['feesChart'] != null)
+                  Text(
+                    FormatHelper.getFeesRange(Map<String, dynamic>.from(widget.user['feesChart'])),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11.5.sp,
+                      color: Colors.green.shade600,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: 2.w),
-                  Text("👑", style: TextStyle(fontSize: 10.sp)),
-                ],
-              ),
+
+                SizedBox(height: 2.h),
+
+                // Location
+                if (area.isNotEmpty || city.isNotEmpty)
+                  Row(
+                    children: [
+                      Icon(Icons.location_on_rounded, size: 11.sp, color: Colors.grey),
+                      SizedBox(width: 2.w),
+                      Expanded(
+                        child: Text(
+                          "$area${area.isNotEmpty && city.isNotEmpty ? ", " : ""}$city",
+                          style: TextStyle(
+                            fontSize: 9.5.sp,
+                            color: isDark ? Colors.white54 : Colors.grey.shade600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
             ),
           ),
-
-        // Heart Icon at a FIXED position in the Top Right Corner
-        Positioned(
-          top: 30.h, // Fixed position below the possible badge area
-          right: 4.w,  // Adjusted for IconButton padding
-          child: IconButton(
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            icon: Icon(
-              isWishlisted ? Icons.favorite : Icons.favorite_border,
-              size: 24.sp,
-              color: isWishlisted ? Colors.red : (isDark ? Colors.white70 : Colors.grey),
-            ),
-            onPressed: () async {
-              final adId = widget.user['id']?.toString() ?? '';
-              if (adId.isEmpty) return;
-
-              setState(() {
-                isWishlisted = !isWishlisted;
-              });
-
-              final ref = FirebaseFirestore.instance
-                  .collection("users")
-                  .doc(widget.uid)
-                  .collection("wishlist")
-                  .doc(adId);
-
-              try {
-                if (isWishlisted) {
-                  // Save full data for easier display in wishlist page
-                  await ref.set({
-                    ...widget.user,
-                    "id": adId,
-                    "parentId": widget.user['parentId'], // FIX: Store the seller's UID, not the current user's UID
-                    "wishlistedAt": DateTime.now().toIso8601String(),
-                  });
-                } else {
-                  await ref.delete();
-                }
-              } catch (e) {
-                debugPrint("Error updating wishlist: $e");
-              }
-            },
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -317,12 +366,12 @@ class _UserBoxState extends State<UserBox> {
             Text(
               avg.toStringAsFixed(1),
               style: TextStyle(
-                fontSize: 11.sp,
+                fontSize: 10.sp,
                 fontWeight: FontWeight.bold,
                 color: Colors.orange,
               ),
             ),
-            Icon(Icons.star, size: 12.sp, color: Colors.orange),
+            Icon(Icons.star, size: 11.sp, color: Colors.orange),
           ],
         );
       },
@@ -366,7 +415,16 @@ class _UserBoxState extends State<UserBox> {
     }
   }
 
-  String _formatClasses(dynamic classes) {
+  String _formatDistance(double meters) {
+    double km = meters / 1000;
+    if (km < 1) {
+      return "${(meters).toStringAsFixed(0)} m";
+    } else {
+      return "${km.toStringAsFixed(1)} km";
+    }
+  }
+
+  String _formatClassDisplay(dynamic classes) {
     if (classes == null || classes.toString().isEmpty) return "";
 
     List<String> selected = [];
@@ -384,13 +442,11 @@ class _UserBoxState extends State<UserBox> {
       '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'
     ];
 
-    // Filter out items not in sequence if any, then sort based on sequence
     selected = selected.where((item) => sequence.contains(item)).toList();
     selected.sort((a, b) => sequence.indexOf(a).compareTo(sequence.indexOf(b)));
 
     if (selected.isEmpty) return "";
 
-    // Check if it's a continuous range
     bool isContinuous = true;
     if (selected.length > 2) {
       int startIdx = sequence.indexOf(selected.first);
@@ -411,16 +467,6 @@ class _UserBoxState extends State<UserBox> {
     }
   }
 
-  String _formatDistance(double meters) {
-    double km = meters / 1000;
-    if (km < 1) {
-      return "${(meters).toStringAsFixed(0)} m";
-    } else {
-      return "${km.toStringAsFixed(1)} km";
-    }
-  }
-
-
   String _getSpecializationSummary(dynamic data, String type) {
     if (data == null) return "";
     
@@ -433,7 +479,6 @@ class _UserBoxState extends State<UserBox> {
     
     if (items.isEmpty) return "";
 
-    // Mapping for Coaching and Skills (Aligned with Form Groups)
     final Map<String, List<String>> coachingGroups = {
       'Language': ['Assamese','Bengali','Bodo','Dogri','English','French','German','Gujarati','Japanese','Hindi','Kannada','Kashmiri','Konkani','Maithili','Malayalam','Manipuri','Marathi','Nepali','Odia','Punjabi','Sanskrit','Santhali','Sindhi','Spanish','Tamil','Telugu','Urdu'],
       'Engineering Entrance': ['IIT-JEE Mains','IIT-JEE Advanced','BITSAT','VITEEE','SRMJEEE','WBJEE','COMEDK'],

@@ -3,10 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:coze/home_page/user_info/user_details.dart';
-import 'package:coze/home_page/user_info/user_box.dart'; // ✅ Added missing import
+import 'package:coze/home_page/user_info/user_box.dart';
 import 'package:coze/advertisement/advertise.dart';
-
-import 'package:coze/app_bar/app_bar.dart';
 
 class OnlineClassPage extends StatefulWidget {
   const OnlineClassPage({super.key});
@@ -92,7 +90,17 @@ class _OnlineClassPageState extends State<OnlineClassPage> {
     
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.grey[50],
-      appBar: const MainAppBar(),
+      appBar: AppBar(
+        title: Text(
+          "Online Classes",
+          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.indigo,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
       body: Column(
         children: [
           // 🔍 Specific Search Bar for this page
