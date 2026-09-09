@@ -525,7 +525,7 @@ class _FilterWidgetState extends State<FilterWidget> {
                           style: TextStyle(
                             fontSize: 11.sp,
                             color: Colors.blue.shade900,
-                            fontWeight: FontWeight.black,
+                            fontWeight: FontWeight.w900,
                             height: 1.0,
                           ),
                         ),
@@ -660,7 +660,7 @@ class _FilterWidgetState extends State<FilterWidget> {
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                             color: isSelected
                                 ? Colors.white
-                                : (isDark ? Colors.white87 : Colors.grey.shade800),
+                                : (isDark ? Colors.white70 : Colors.grey.shade800),
                           ),
                         ),
                       ],
