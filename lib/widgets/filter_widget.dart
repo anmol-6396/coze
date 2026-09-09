@@ -444,19 +444,20 @@ class _FilterWidgetState extends State<FilterWidget> {
     final quickSelectedVal = quickKey != null ? selectedMap[quickKey] : null;
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8.h),
+      padding: EdgeInsets.symmetric(vertical: 4.h),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Row(
           children: [
-            // 🌟 1. Premium Floating Filter Trigger Button
+            // 🌟 1. Compact & Ultra-Attractive Filter Button
             InkWell(
               onTap: () => _openFilterBottomSheet(context),
-              borderRadius: BorderRadius.circular(25.r),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+              borderRadius: BorderRadius.circular(20.r),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   gradient: hasActiveFilter
                       ? const LinearGradient(
@@ -467,21 +468,21 @@ class _FilterWidgetState extends State<FilterWidget> {
                       : null,
                   color: hasActiveFilter
                       ? null
-                      : (isDark ? const Color(0xFF1E222D) : Colors.white),
-                  borderRadius: BorderRadius.circular(25.r),
+                      : (isDark ? const Color(0xFF161822) : Colors.white),
+                  borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(
                     color: hasActiveFilter
                         ? Colors.blueAccent
-                        : (isDark ? Colors.white12 : Colors.grey.shade300),
+                        : (isDark ? Colors.white.withValues(alpha: 0.12) : Colors.blueAccent.withValues(alpha: 0.3)),
                     width: 1.2,
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: hasActiveFilter
                           ? Colors.blueAccent.withValues(alpha: 0.35)
-                          : Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                          : Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     )
                   ],
                 ),
@@ -489,7 +490,7 @@ class _FilterWidgetState extends State<FilterWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      padding: EdgeInsets.all(5.r),
+                      padding: EdgeInsets.all(4.r),
                       decoration: BoxDecoration(
                         color: hasActiveFilter
                             ? Colors.white.withValues(alpha: 0.2)
@@ -498,32 +499,32 @@ class _FilterWidgetState extends State<FilterWidget> {
                       ),
                       child: Icon(
                         Icons.tune_rounded,
-                        size: 15.sp,
+                        size: 13.sp,
                         color: hasActiveFilter ? Colors.white : Colors.blueAccent,
                       ),
                     ),
-                    SizedBox(width: 8.w),
+                    SizedBox(width: 6.w),
                     Text(
                       "Filter",
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 12.5.sp,
                         fontWeight: FontWeight.w800,
                         color: hasActiveFilter ? Colors.white : (isDark ? Colors.white : Colors.black87),
-                        letterSpacing: 0.3,
+                        letterSpacing: 0.2,
                       ),
                     ),
                     if (hasActiveFilter) ...[
-                      SizedBox(width: 6.w),
+                      SizedBox(width: 5.w),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.5.h),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12.r),
+                          borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Text(
                           "$activeCount",
                           style: TextStyle(
-                            fontSize: 11.sp,
+                            fontSize: 10.sp,
                             color: Colors.blue.shade900,
                             fontWeight: FontWeight.w900,
                             height: 1.0,
@@ -531,10 +532,10 @@ class _FilterWidgetState extends State<FilterWidget> {
                         ),
                       ),
                     ] else ...[
-                      SizedBox(width: 4.w),
+                      SizedBox(width: 3.w),
                       Icon(
                         Icons.keyboard_arrow_down_rounded,
-                        size: 18.sp,
+                        size: 16.sp,
                         color: isDark ? Colors.white54 : Colors.grey.shade600,
                       ),
                     ],
@@ -545,7 +546,7 @@ class _FilterWidgetState extends State<FilterWidget> {
 
             // 🔹 Clear All Quick Button if Filter Active
             if (hasActiveFilter) ...[
-              SizedBox(width: 8.w),
+              SizedBox(width: 6.w),
               InkWell(
                 onTap: () {
                   if (widget.onCustomFilterChanged != null) {
@@ -558,22 +559,22 @@ class _FilterWidgetState extends State<FilterWidget> {
                     widget.onFilterChanged!(null, null);
                   }
                 },
-                borderRadius: BorderRadius.circular(20.r),
+                borderRadius: BorderRadius.circular(18.r),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                  padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: Colors.redAccent.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20.r),
+                    borderRadius: BorderRadius.circular(18.r),
                     border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.close_rounded, size: 14.sp, color: Colors.redAccent),
-                      SizedBox(width: 3.w),
+                      Icon(Icons.close_rounded, size: 13.sp, color: Colors.redAccent),
+                      SizedBox(width: 2.w),
                       Text(
                         "Clear",
                         style: TextStyle(
-                          fontSize: 11.5.sp,
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.bold,
                           color: Colors.redAccent,
                         ),
@@ -584,7 +585,7 @@ class _FilterWidgetState extends State<FilterWidget> {
               ),
             ],
 
-            SizedBox(width: 10.w),
+            SizedBox(width: 8.w),
 
             // 🌟 2. Direct Quick Horizontal Filter Pills
             ...quickOptions.take(6).map((option) {
@@ -595,7 +596,7 @@ class _FilterWidgetState extends State<FilterWidget> {
                   : option;
 
               return Padding(
-                padding: EdgeInsets.only(right: 8.w),
+                padding: EdgeInsets.only(right: 6.w),
                 child: InkWell(
                   onTap: () {
                     final newVal = isSelected ? null : option;
@@ -611,10 +612,10 @@ class _FilterWidgetState extends State<FilterWidget> {
                       }
                     }
                   },
-                  borderRadius: BorderRadius.circular(22.r),
+                  borderRadius: BorderRadius.circular(18.r),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       gradient: isSelected
                           ? const LinearGradient(
@@ -624,24 +625,24 @@ class _FilterWidgetState extends State<FilterWidget> {
                       color: isSelected
                           ? null
                           : (isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white),
-                      borderRadius: BorderRadius.circular(22.r),
+                      borderRadius: BorderRadius.circular(18.r),
                       border: Border.all(
                         color: isSelected
                             ? Colors.blueAccent
                             : (isDark ? Colors.white12 : Colors.grey.shade300),
-                        width: isSelected ? 1.5 : 1.0,
+                        width: isSelected ? 1.2 : 1.0,
                       ),
                       boxShadow: [
                         if (isSelected)
                           BoxShadow(
                             color: Colors.blueAccent.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
                           )
                         else if (!isDark)
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.03),
-                            blurRadius: 6,
+                            blurRadius: 4,
                             offset: const Offset(0, 2),
                           )
                       ],
@@ -650,13 +651,13 @@ class _FilterWidgetState extends State<FilterWidget> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (isSelected) ...[
-                          Icon(Icons.check_rounded, size: 14.sp, color: Colors.white),
-                          SizedBox(width: 4.w),
+                          Icon(Icons.check_rounded, size: 13.sp, color: Colors.white),
+                          SizedBox(width: 3.w),
                         ],
                         Text(
                           displayLabel,
                           style: TextStyle(
-                            fontSize: 12.5.sp,
+                            fontSize: 11.5.sp,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                             color: isSelected
                                 ? Colors.white
