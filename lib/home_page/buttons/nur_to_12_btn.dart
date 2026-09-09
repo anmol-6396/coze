@@ -501,8 +501,4 @@ class Nur12BtnState extends State<Nur12Btn> {
       ),
     );
   }
-        ),
-      ),
-    );
-  }
 }

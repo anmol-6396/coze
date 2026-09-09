@@ -500,7 +500,4 @@ class SchoolBtnState extends State<SchoolBtn> {
       ),
     );
   }
-      ),
-    );
-  }
 }
