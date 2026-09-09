@@ -18,7 +18,7 @@ class FilterWidget extends StatefulWidget {
 
   const FilterWidget({
     super.key,
-    this.title = "Filter Options",
+    this.title = "Filter Results",
     this.boardList,
     this.classList,
     this.selectedBoard,
@@ -79,66 +79,74 @@ class _FilterWidgetState extends State<FilterWidget> {
 
             return Container(
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(ctx).size.height * 0.85,
+                maxHeight: MediaQuery.of(ctx).size.height * 0.82,
               ),
-              padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h + MediaQuery.of(ctx).padding.bottom),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF181A20) : Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
+                color: isDark ? const Color(0xFF12141A) : Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25),
-                    blurRadius: 25,
-                    spreadRadius: 5,
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 30,
+                    spreadRadius: 8,
                   ),
                 ],
               ),
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 🔹 Drag Handle Bar
-                    Center(
-                      child: Container(
-                        width: 40.w,
-                        height: 4.h,
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white24 : Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 12.h),
+
+                  // 🔹 Top Drag Bar Indicator
+                  Center(
+                    child: Container(
+                      width: 42.w,
+                      height: 4.5.h,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white24 : Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
+                  ),
 
-                    SizedBox(height: 16.h),
+                  SizedBox(height: 16.h),
 
-                    // 🔹 Header & Reset All Button
-                    Row(
+                  // 🔹 Header with Title, Count Badge & Reset All Button
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.tune_rounded, color: Colors.blueAccent, size: 22.sp),
-                            SizedBox(width: 8.w),
+                            Container(
+                              padding: EdgeInsets.all(8.r),
+                              decoration: BoxDecoration(
+                                color: Colors.blueAccent.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: Icon(Icons.tune_rounded, color: Colors.blueAccent, size: 20.sp),
+                            ),
+                            SizedBox(width: 10.w),
                             Text(
                               widget.title,
                               style: TextStyle(
                                 fontSize: 18.sp,
                                 fontWeight: FontWeight.bold,
                                 color: isDark ? Colors.white : Colors.black87,
+                                letterSpacing: 0.3,
                               ),
                             ),
                             if (activeCount > 0) ...[
                               SizedBox(width: 8.w),
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                                 decoration: BoxDecoration(
                                   color: Colors.blueAccent,
                                   borderRadius: BorderRadius.circular(12.r),
                                 ),
                                 child: Text(
-                                  "$activeCount active",
+                                  "$activeCount Selected",
                                   style: TextStyle(
                                     fontSize: 10.sp,
                                     color: Colors.white,
@@ -146,94 +154,178 @@ class _FilterWidgetState extends State<FilterWidget> {
                                   ),
                                 ),
                               ),
-                            ]
+                            ],
                           ],
                         ),
                         if (activeCount > 0)
-                          TextButton(
-                            onPressed: () {
+                          GestureDetector(
+                            onTap: () {
                               setModalState(() {
                                 for (var key in tempSelected.keys) {
                                   tempSelected[key] = null;
                                 }
                               });
                             },
-                            child: Text(
-                              "Reset All",
-                              style: TextStyle(
-                                color: Colors.redAccent,
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.bold,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.refresh_rounded, size: 13.sp, color: Colors.redAccent),
+                                  SizedBox(width: 3.w),
+                                  Text(
+                                    "Reset All",
+                                    style: TextStyle(
+                                      color: Colors.redAccent,
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                       ],
                     ),
+                  ),
 
-                    Divider(height: 24.h, thickness: 1, color: isDark ? Colors.white10 : Colors.grey.shade200),
+                  SizedBox(height: 12.h),
+                  Divider(height: 1.h, thickness: 1, color: isDark ? Colors.white10 : Colors.grey.shade200),
 
-                    // 🔹 Render Each Section dynamically
-                    ...sections.entries.map((section) {
-                      final title = section.key;
-                      final options = section.value;
-                      final selectedVal = tempSelected[title];
-                      final isClassSection = title.toUpperCase() == "CLASS";
-
-                      final List<LinearGradient> gradients = [
-                        const LinearGradient(colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)]),
-                        const LinearGradient(colors: [Color(0xFF7C3AED), Color(0xFF5B21B6)]),
-                        const LinearGradient(colors: [Color(0xFF059669), Color(0xFF047857)]),
-                        const LinearGradient(colors: [Color(0xFFD97706), Color(0xFFB45309)]),
-                      ];
-                      final sectionIndex = sections.keys.toList().indexOf(title);
-                      final gradient = gradients[sectionIndex % gradients.length];
-
-                      return Column(
+                  // 🔹 Scrollable Filter Sections Area
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            title.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                              color: Colors.blueAccent,
-                            ),
-                          ),
-                          SizedBox(height: 10.h),
-                          Wrap(
-                            spacing: 8.w,
-                            runSpacing: 8.h,
-                            children: options.map((opt) {
-                              final isSelected = selectedVal == opt;
-                              final displayLabel = (isClassSection && RegExp(r'^\d+$').hasMatch(opt))
-                                  ? "Class $opt"
-                                  : opt;
+                          ...sections.entries.map((section) {
+                            final title = section.key;
+                            final options = section.value;
+                            final selectedVal = tempSelected[title];
+                            final isClassSection = title.toUpperCase() == "CLASS";
 
-                              return _buildSheetChip(
-                                label: displayLabel,
-                                isSelected: isSelected,
-                                activeGradient: gradient,
-                                onTap: () {
-                                  setModalState(() {
-                                    tempSelected[title] = isSelected ? null : opt;
-                                  });
-                                },
-                                isDark: isDark,
-                              );
-                            }).toList(),
-                          ),
-                          SizedBox(height: 20.h),
+                            final List<LinearGradient> gradients = [
+                              const LinearGradient(
+                                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              const LinearGradient(
+                                colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              const LinearGradient(
+                                colors: [Color(0xFF10B981), Color(0xFF047857)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              const LinearGradient(
+                                colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ];
+                            final sectionIndex = sections.keys.toList().indexOf(title);
+                            final gradient = gradients[sectionIndex % gradients.length];
+                            final accentColor = gradient.colors.first;
+
+                            return Container(
+                              margin: EdgeInsets.only(bottom: 20.h),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 4.w,
+                                        height: 14.h,
+                                        decoration: BoxDecoration(
+                                          color: accentColor,
+                                          borderRadius: BorderRadius.circular(4.r),
+                                        ),
+                                      ),
+                                      SizedBox(width: 8.w),
+                                      Text(
+                                        title.toUpperCase(),
+                                        style: TextStyle(
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 1.2,
+                                          color: isDark ? Colors.white70 : Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 12.h),
+                                  Wrap(
+                                    spacing: 8.w,
+                                    runSpacing: 10.h,
+                                    children: options.map((opt) {
+                                      final isSelected = selectedVal == opt;
+                                      final displayLabel = (isClassSection && RegExp(r'^\d+$').hasMatch(opt))
+                                          ? "Class $opt"
+                                          : opt;
+
+                                      return _buildSheetChip(
+                                        label: displayLabel,
+                                        isSelected: isSelected,
+                                        activeGradient: gradient,
+                                        accentColor: accentColor,
+                                        onTap: () {
+                                          setModalState(() {
+                                            tempSelected[title] = isSelected ? null : opt;
+                                          });
+                                        },
+                                        isDark: isDark,
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
                         ],
-                      );
-                    }),
+                      ),
+                    ),
+                  ),
 
-                    SizedBox(height: 8.h),
-
-                    // 🔹 Apply Button
-                    SizedBox(
+                  // 🔹 Bottom Floating Apply Button Area
+                  Container(
+                    padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h + MediaQuery.of(ctx).padding.bottom),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF181A20) : Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 15,
+                          offset: const Offset(0, -5),
+                        ),
+                      ],
+                    ),
+                    child: Container(
                       width: double.infinity,
-                      height: 52.h,
+                      height: 54.h,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blueAccent.withValues(alpha: 0.35),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
+                      ),
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.pop(ctx);
@@ -244,23 +336,30 @@ class _FilterWidgetState extends State<FilterWidget> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
                         ),
-                        child: Text(
-                          "APPLY FILTERS",
-                          style: TextStyle(
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                          ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "APPLY FILTERS",
+                              style: TextStyle(
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18.sp),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           },
@@ -273,43 +372,54 @@ class _FilterWidgetState extends State<FilterWidget> {
     required String label,
     required bool isSelected,
     required LinearGradient activeGradient,
+    required Color accentColor,
     required VoidCallback onTap,
     required bool isDark,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14.r),
+      borderRadius: BorderRadius.circular(20.r),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
         decoration: BoxDecoration(
           gradient: isSelected ? activeGradient : null,
           color: isSelected
               ? null
               : (isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.shade100),
-          borderRadius: BorderRadius.circular(14.r),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected
-                ? Colors.blueAccent.withValues(alpha: 0.6)
+                ? accentColor.withValues(alpha: 0.8)
                 : (isDark ? Colors.white12 : Colors.grey.shade300),
             width: isSelected ? 1.5 : 1.0,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: accentColor.withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  )
+                ]
+              : [],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (isSelected) ...[
-              Icon(Icons.check_rounded, size: 14.sp, color: Colors.white),
-              SizedBox(width: 4.w),
+              Icon(Icons.check_circle_rounded, size: 15.sp, color: Colors.white),
+              SizedBox(width: 6.w),
             ],
             Text(
               label,
               style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 12.5.sp,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                 color: isSelected
                     ? Colors.white
                     : (isDark ? Colors.white70 : Colors.black87),
+                letterSpacing: 0.2,
               ),
             ),
           ],
@@ -330,56 +440,70 @@ class _FilterWidgetState extends State<FilterWidget> {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         children: [
-          // 🔹 Compact Filter Trigger Button
+          // 🔹 Compact Modern Filter Trigger Button
           InkWell(
             onTap: () => _openFilterBottomSheet(context),
-            borderRadius: BorderRadius.circular(18.r),
+            borderRadius: BorderRadius.circular(22.r),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               decoration: BoxDecoration(
+                gradient: hasActiveFilter
+                    ? const LinearGradient(
+                        colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                      )
+                    : null,
                 color: hasActiveFilter
-                    ? Colors.blueAccent.withValues(alpha: 0.12)
-                    : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100),
-                borderRadius: BorderRadius.circular(18.r),
+                    ? null
+                    : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white),
+                borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
                   color: hasActiveFilter
                       ? Colors.blueAccent
-                      : (isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.08)),
-                  width: hasActiveFilter ? 1.5 : 1.0,
+                      : (isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.1)),
+                  width: 1.2,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: hasActiveFilter
+                        ? Colors.blueAccent.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  )
+                ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     Icons.tune_rounded,
-                    size: 16.sp,
-                    color: hasActiveFilter ? Colors.blueAccent : (isDark ? Colors.white70 : Colors.black87),
+                    size: 17.sp,
+                    color: hasActiveFilter ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
                   ),
                   SizedBox(width: 6.w),
                   Text(
                     "Filter",
                     style: TextStyle(
-                      fontSize: 13.sp,
+                      fontSize: 13.5.sp,
                       fontWeight: FontWeight.bold,
-                      color: hasActiveFilter ? Colors.blueAccent : (isDark ? Colors.white : Colors.black87),
+                      color: hasActiveFilter ? Colors.white : (isDark ? Colors.white : Colors.black87),
                     ),
                   ),
                   if (hasActiveFilter) ...[
                     SizedBox(width: 6.w),
                     Container(
-                      padding: EdgeInsets.all(5.r),
-                      decoration: const BoxDecoration(
-                        color: Colors.blueAccent,
-                        shape: BoxShape.circle,
+                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Text(
                         "$activeCount",
                         style: TextStyle(
-                          fontSize: 10.sp,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 11.sp,
+                          color: Colors.blue.shade900,
+                          fontWeight: FontWeight.extrabold,
                           height: 1.0,
                         ),
                       ),
@@ -390,7 +514,7 @@ class _FilterWidgetState extends State<FilterWidget> {
             ),
           ),
 
-          SizedBox(width: 8.w),
+          SizedBox(width: 10.w),
 
           // 🔹 Quick Active Badges Scroll Row
           if (hasActiveFilter)
@@ -407,7 +531,7 @@ class _FilterWidgetState extends State<FilterWidget> {
                         : val;
 
                     return Padding(
-                      padding: EdgeInsets.only(right: 6.w),
+                      padding: EdgeInsets.only(right: 8.w),
                       child: _buildActiveBadge(
                         label: displayVal,
                         onRemove: () {
@@ -439,11 +563,11 @@ class _FilterWidgetState extends State<FilterWidget> {
     required bool isDark,
   }) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: Colors.blueAccent.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.3)),
+        color: isDark ? Colors.blueAccent.withValues(alpha: 0.15) : Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -451,17 +575,17 @@ class _FilterWidgetState extends State<FilterWidget> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.blueAccent,
+              fontSize: 11.5.sp,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.blue.shade200 : Colors.blue.shade900,
             ),
           ),
-          SizedBox(width: 4.w),
+          SizedBox(width: 6.w),
           GestureDetector(
             onTap: onRemove,
             child: Icon(
               Icons.cancel_rounded,
-              size: 14.sp,
+              size: 15.sp,
               color: Colors.blueAccent,
             ),
           ),
