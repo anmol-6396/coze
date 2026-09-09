@@ -9,7 +9,6 @@ import 'package:coze/home_page/buttons/coaching_btn.dart';
 import 'package:coze/home_page/buttons/school_btn.dart';
 import 'package:coze/home_page/buttons/college_btn.dart';
 import 'package:coze/home_page/buttons/library_page.dart';
-import 'package:coze/widgets/animated_tutor_icon.dart';
 
 class MergedRows extends StatelessWidget {
   const MergedRows({super.key});
@@ -33,28 +32,21 @@ class MergedRows extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            label == "Tutor"
-                ? AnimatedTutorIcon(
-                    imagePath: imagePath,
-                    icon: icon,
-                    size: 32.w,
-                    glowColor: Colors.blueAccent,
+            Container(
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.blue.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: imagePath != null
+                ? Image.asset(
+                    imagePath,
+                    width: 32.w,
+                    height: 32.w,
+                    fit: BoxFit.contain,
                   )
-                : Container(
-                    padding: EdgeInsets.all(10.w),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.blue.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: imagePath != null 
-                      ? Image.asset(
-                          imagePath,
-                          width: 32.w,
-                          height: 32.w,
-                          fit: BoxFit.contain,
-                        )
-                      : Icon(icon, color: Colors.blue, size: 28.sp),
-                  ),
+                : Icon(icon, color: Colors.blue, size: 28.sp),
+            ),
             SizedBox(height: 6.h),
             Text(
               label,
