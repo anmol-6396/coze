@@ -9,6 +9,7 @@ import 'package:coze/home_page/user_info/user_box.dart';
 import 'package:coze/home_page/user_info/user_details.dart';
 import 'package:coze/Services/data_manager.dart';
 import 'package:coze/advertisement/advertise.dart'; // ✅ Centralized Ads
+import 'package:coze/widgets/filter_widget.dart';
 
 class CollegeBtn extends StatefulWidget {
   const CollegeBtn({super.key});
@@ -132,13 +133,19 @@ class CollegeBtnState extends State<CollegeBtn> {
 
     return Column(
       children: [
-        // ✅ Course filter buttons
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-          child: Row(
-            children: courseGroups.keys.map((cat) => _filterButton(cat)).toList(),
-          ),
+        FilterWidget(
+          title: "College Level Filters",
+          customSections: {
+            "LEVEL": courseGroups.keys.toList(),
+          },
+          customSelectedFilters: {
+            "LEVEL": selectedCategory,
+          },
+          onCustomFilterChanged: (map) {
+            setState(() {
+              selectedCategory = map["LEVEL"];
+            });
+          },
         ),
 
         Expanded(

@@ -18,10 +18,14 @@ class _OnlineClassPageState extends State<OnlineClassPage> {
   final TextEditingController _searchController = TextEditingController();
   final currentUserUid = FirebaseAuth.instance.currentUser?.uid ?? '';
   
+  String? selectedClass;
+  String? selectedCategory;
   String? selectedSubject;
   String? selectedMode;
 
-  final List<String> subjectList = ['Python', 'Java', 'Web Dev', 'App Dev', 'Maths', 'Science', 'English', 'Commerce', 'Competitive'];
+  final List<String> classList = ['Nur', 'LKG', 'UKG', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+  final List<String> categoryList = ['School Tuition', 'Competitive Exam', 'Programming & IT', 'Languages', 'Skills & Hobbies'];
+  final List<String> subjectList = ['Python', 'Java', 'Web Dev', 'App Dev', 'Maths', 'Physics', 'Chemistry', 'Biology', 'English', 'Commerce'];
   final List<String> modeList = ['Live Class', 'Recorded Batch', '1-on-1 Tuition'];
 
   List<Map<String, dynamic>> _allOnlineClasses = [];
@@ -81,10 +85,27 @@ class _OnlineClassPageState extends State<OnlineClassPage> {
         final subjects = (item['subjects'] ?? item['subject'] ?? '').toString().toLowerCase();
         final about = (item['about'] ?? '').toString().toLowerCase();
         final mode = (item['mode'] ?? item['classType'] ?? '').toString().toLowerCase();
+        final classes = (item['classes'] ?? item['class'] ?? '').toString().toLowerCase();
 
         // Search Query
         if (query.isNotEmpty) {
           if (!name.contains(query) && !subjects.contains(query) && !about.contains(query)) {
+            return false;
+          }
+        }
+
+        // Class Filter
+        if (selectedClass != null && selectedClass!.isNotEmpty) {
+          if (!classes.contains(selectedClass!.toLowerCase()) &&
+              !name.contains(selectedClass!.toLowerCase())) {
+            return false;
+          }
+        }
+
+        // Category Filter
+        if (selectedCategory != null && selectedCategory!.isNotEmpty) {
+          final catLower = selectedCategory!.toLowerCase();
+          if (!name.contains(catLower) && !subjects.contains(catLower) && !about.contains(catLower)) {
             return false;
           }
         }
@@ -170,10 +191,25 @@ class _OnlineClassPageState extends State<OnlineClassPage> {
           FilterWidget(
             title: "Course Filters",
             customSections: {
+              "CLASS": classList,
+              "CATEGORY": categoryList,
               "SUBJECT": subjectList,
               "MODE": modeList,
             },
             customSelectedFilters: {
+              "CLASS": selectedClass,
+              "CATEGORY": selectedCategory,
+              "SUBJECT": selectedSubject,
+              "MODE": selectedMode,
+            },
+            onCustomFilterChanged: (map) {
+              selectedClass = map["CLASS"];
+              selectedCategory = map["CATEGORY"];
+              selectedSubject = map["SUBJECT"];
+              selectedMode = map["MODE"];
+              _applyFilters();
+            },
+          ),
               "SUBJECT": selectedSubject,
               "MODE": selectedMode,
             },
