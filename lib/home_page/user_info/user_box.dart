@@ -22,6 +22,8 @@ class UserBox extends StatefulWidget {
 
 class _UserBoxState extends State<UserBox> {
   bool isWishlisted = false;
+  bool _isHovered = false;
+  bool _isPressed = false;
 
   @override
   void initState() {
@@ -90,24 +92,40 @@ class _UserBoxState extends State<UserBox> {
     final isElite = selectedPlan.contains('Elite');
     final isPro = selectedPlan.contains('Pro');
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? Colors.black38 : Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8.r,
-            offset: const Offset(0, 3),
+    final double scale = _isPressed ? 0.96 : (_isHovered ? 1.04 : 1.0);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          transform: Matrix4.identity()..scale(scale),
+          transformAlignment: Alignment.center,
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+              BoxShadow(
+                color: (_isHovered || _isPressed)
+                    ? Colors.blueAccent.withValues(alpha: 0.25)
+                    : (isDark ? Colors.black38 : Colors.black.withValues(alpha: 0.06)),
+                blurRadius: (_isHovered || _isPressed) ? 14.r : 8.r,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border.all(
+              color: (_isHovered || _isPressed)
+                  ? Colors.blueAccent.withValues(alpha: 0.5)
+                  : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey.shade200),
+              width: (_isHovered || _isPressed) ? 1.5 : 1.0,
+            ),
           ),
-        ],
-        border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey.shade200,
-          width: 1,
-        ),
-      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -332,6 +350,8 @@ class _UserBoxState extends State<UserBox> {
             ),
           ),
         ],
+      ),
+        ),
       ),
     );
   }

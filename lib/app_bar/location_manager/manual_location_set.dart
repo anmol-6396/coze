@@ -89,17 +89,23 @@ class _ManualLocationSetPageState extends State<ManualLocationSetPage> {
   void _confirmLocation() async {
     if (!_formKey.currentState!.validate()) return;
     
+    final String area = areaController.text.trim();
     final String finalCity = cityController.text.trim();
     final double lat = locationData?['latitude'] ?? 28.6139;
     final double lng = locationData?['longitude'] ?? 77.2090;
+
+    final String fullDisplay = (area.isNotEmpty && area.toLowerCase() != finalCity.toLowerCase())
+        ? "$area, $finalCity"
+        : finalCity;
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble("user_lat", lat);
     await prefs.setDouble("user_lng", lng);
     await prefs.setString("user_locality", finalCity);
+    await prefs.setString("user_locality_full", fullDisplay);
 
     if (mounted) {
-      Navigator.pop(context, finalCity); // Return to Homepage
+      Navigator.pop(context, fullDisplay); // Return "Area, City" to Homepage
     }
   }
 

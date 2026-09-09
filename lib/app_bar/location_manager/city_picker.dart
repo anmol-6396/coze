@@ -44,14 +44,19 @@ class _CityPickerPageState extends State<CityPickerPage> {
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
         final locality = place.locality ?? place.subAdministrativeArea ?? "Local Zone";
-        
+        final area = place.subLocality ?? place.thoroughfare ?? place.name ?? "";
+        final full = (area.isNotEmpty && area.toLowerCase() != locality.toLowerCase())
+            ? "$area, $locality"
+            : locality;
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setDouble("user_lat", lat);
         await prefs.setDouble("user_lng", lng);
         await prefs.setString("user_locality", locality);
+        await prefs.setString("user_locality_full", full);
 
         if (mounted) {
-          Navigator.pop(context, locality);
+          Navigator.pop(context, full);
         }
       }
     } catch (e) {
