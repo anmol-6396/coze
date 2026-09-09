@@ -10,6 +10,7 @@ import 'job_detail.dart';
 import 'package:coze/Services/data_manager.dart';
 import 'package:coze/advertisement/advertise.dart';
 import 'package:coze/app_bar/app_bar.dart';
+import 'package:coze/widgets/filter_widget.dart';
 
 class JobPage extends StatefulWidget {
   const JobPage({super.key});
@@ -20,6 +21,12 @@ class JobPage extends StatefulWidget {
 
 class _JobPageState extends State<JobPage> {
   String searchQuery = "";
+  String? selectedJobType;
+  String? selectedExperience;
+
+  final List<String> jobTypeList = ['Full Time', 'Part Time', 'Work From Home', 'Contract', 'Internship'];
+  final List<String> experienceList = ['Fresher', '1-2 Years', '2-5 Years', '5+ Years'];
+
   final TextEditingController _searchController = TextEditingController();
   final currentUserUid = FirebaseAuth.instance.currentUser?.uid ?? '';
   Position? _currentPosition;
@@ -120,6 +127,25 @@ class _JobPageState extends State<JobPage> {
               ),
             ),
 
+            // 🔹 Job Filter Widget
+            FilterWidget(
+              title: "Job Filters",
+              customSections: {
+                "JOB TYPE": jobTypeList,
+                "EXPERIENCE": experienceList,
+              },
+              customSelectedFilters: {
+                "JOB TYPE": selectedJobType,
+                "EXPERIENCE": selectedExperience,
+              },
+              onCustomFilterChanged: (map) {
+                setState(() {
+                  selectedJobType = map["JOB TYPE"];
+                  selectedExperience = map["EXPERIENCE"];
+                });
+              },
+            ),
+
             // 📚 Results
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
@@ -150,6 +176,16 @@ class _JobPageState extends State<JobPage> {
                           !expLevel.contains(searchQuery)) {
                         continue;
                       }
+                    }
+
+                    // Filter by Job Type
+                    if (selectedJobType != null && selectedJobType!.isNotEmpty) {
+                      if (!jobType.contains(selectedJobType!.toLowerCase())) continue;
+                    }
+
+                    // Filter by Experience
+                    if (selectedExperience != null && selectedExperience!.isNotEmpty) {
+                      if (!expLevel.contains(selectedExperience!.toLowerCase())) continue;
                     }
 
                     jobList.add({

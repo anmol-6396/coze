@@ -9,6 +9,7 @@ import 'package:coze/home_page/user_info/user_box.dart';
 import 'package:coze/home_page/user_info/user_details.dart';
 import 'package:coze/Services/data_manager.dart';
 import 'package:coze/advertisement/advertise.dart'; // ✅ Centralized Ads
+import 'package:coze/widgets/filter_widget.dart';
 
 class CoachingBtn extends StatefulWidget {
   const CoachingBtn({super.key});
@@ -139,13 +140,19 @@ class CoachingBtnState extends State<CoachingBtn> {
 
     return Column(
       children: [
-        // ✅ Subject filter buttons
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-          child: Row(
-            children: subjectGroups.keys.map((cat) => _filterButton(cat)).toList(),
-          ),
+        FilterWidget(
+          title: "Coaching Categories",
+          customSections: {
+            "CATEGORY": subjectGroups.keys.toList(),
+          },
+          customSelectedFilters: {
+            "CATEGORY": selectedCategory,
+          },
+          onCustomFilterChanged: (map) {
+            setState(() {
+              selectedCategory = map["CATEGORY"];
+            });
+          },
         ),
 
         Expanded(

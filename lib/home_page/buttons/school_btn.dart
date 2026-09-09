@@ -9,6 +9,7 @@ import 'package:coze/home_page/user_info/user_box.dart';
 import 'package:coze/home_page/user_info/user_details.dart';
 import 'package:coze/Services/data_manager.dart';
 import 'package:coze/advertisement/advertise.dart'; // ✅ Centralized Ads
+import 'package:coze/widgets/filter_widget.dart';
 
 class SchoolBtn extends StatefulWidget {
   const SchoolBtn({super.key});
@@ -142,7 +143,18 @@ class SchoolBtnState extends State<SchoolBtn> {
 
     return Column(
       children: [
-        _buildFilterHeader(context),
+        FilterWidget(
+          boardList: boardList,
+          classList: classList,
+          selectedBoard: selectedBoard,
+          selectedClass: selectedClass,
+          onFilterChanged: (board, className) {
+            setState(() {
+              selectedBoard = board;
+              selectedClass = className;
+            });
+          },
+        ),
 
         Expanded(
           child: FutureBuilder<List<Map<String, dynamic>>>(
@@ -308,196 +320,6 @@ class SchoolBtnState extends State<SchoolBtn> {
       _currentPosition!.longitude,
       loc['latitude'],
       loc['longitude'],
-    );
-  }
-
-  Widget _buildFilterHeader(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final hasActiveFilter = selectedBoard != null || selectedClass != null;
-
-    return Container(
-      margin: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 4.h),
-      padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(
-          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
-        ),
-        boxShadow: [
-          if (!isDark)
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (hasActiveFilter)
-            Padding(
-              padding: EdgeInsets.only(left: 6.w, right: 6.w, bottom: 6.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.tune_rounded, size: 14.sp, color: Colors.blueAccent),
-                      SizedBox(width: 4.w),
-                      Text(
-                        "FILTERED BY",
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
-                          color: Colors.blueAccent,
-                        ),
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedBoard = null;
-                        selectedClass = null;
-                      });
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                      decoration: BoxDecoration(
-                        color: Colors.redAccent.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.close_rounded, size: 12.sp, color: Colors.redAccent),
-                          SizedBox(width: 2.w),
-                          Text(
-                            "Clear Filters",
-                            style: TextStyle(
-                              fontSize: 10.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.redAccent,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          // Board Filter Row
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: boardList.map((b) => _buildFilterChip(
-                label: b,
-                isSelected: selectedBoard == b,
-                activeGradient: const LinearGradient(colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)]),
-                activeColor: Colors.blueAccent,
-                onTap: () {
-                  setState(() {
-                    selectedBoard = selectedBoard == b ? null : b;
-                  });
-                },
-              )).toList(),
-            ),
-          ),
-
-          SizedBox(height: 6.h),
-
-          // Class Filter Row
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: classList.map((c) {
-                final displayLabel = RegExp(r'^\d+$').hasMatch(c) ? "Class $c" : c;
-                return _buildFilterChip(
-                  label: displayLabel,
-                  isSelected: selectedClass == c,
-                  activeGradient: const LinearGradient(colors: [Color(0xFF7C3AED), Color(0xFF5B21B6)]),
-                  activeColor: Colors.purpleAccent,
-                  onTap: () {
-                    setState(() {
-                      selectedClass = selectedClass == c ? null : c;
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip({
-    required String label,
-    required bool isSelected,
-    required LinearGradient activeGradient,
-    required Color activeColor,
-    required VoidCallback onTap,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 3.w),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16.r),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(horizontal: 13.w, vertical: 7.h),
-          decoration: BoxDecoration(
-            gradient: isSelected ? activeGradient : null,
-            color: isSelected
-                ? null
-                : (isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.shade100),
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: isSelected
-                  ? activeColor.withValues(alpha: 0.5)
-                  : (isDark ? Colors.white12 : Colors.grey.shade300),
-              width: isSelected ? 1.5 : 1.0,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: activeColor.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    )
-                  ]
-                : [],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isSelected) ...[
-                Icon(Icons.check_circle_rounded, size: 12.sp, color: Colors.white),
-                SizedBox(width: 4.w),
-              ],
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                  color: isSelected
-                      ? Colors.white
-                      : (isDark ? Colors.white70 : Colors.black87),
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

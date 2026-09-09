@@ -9,6 +9,7 @@ import 'package:coze/Services/data_manager.dart';
 import 'package:coze/advertisement/advertise.dart';
 import 'package:coze/app_bar/app_bar.dart';
 import 'package:coze/home_page/search/search_btn.dart';
+import 'package:coze/widgets/filter_widget.dart';
 
 class SkillSpot extends StatefulWidget {
   const SkillSpot({super.key});
@@ -132,7 +133,22 @@ class _SkillSpotState extends State<SkillSpot> {
                   padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: SearchPage(),
                 ),
-                _buildCategorySelector(isDark),
+                FilterWidget(
+                  title: "Skill Categories",
+                  customSections: const {
+                    "CATEGORY": [
+                      "Home Service", "Dance", "Singing", "Music", "Sports", "Fitness", "Arts", "Crafts", "Cooking"
+                    ],
+                  },
+                  customSelectedFilters: {
+                    "CATEGORY": selectedCategory,
+                  },
+                  onCustomFilterChanged: (map) {
+                    setState(() {
+                      selectedCategory = map["CATEGORY"];
+                    });
+                  },
+                ),
                 const NativeAdBanner(height: 80),
               ],
             ),

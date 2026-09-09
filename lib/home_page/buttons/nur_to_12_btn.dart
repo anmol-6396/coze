@@ -9,6 +9,7 @@ import 'package:coze/home_page/user_info/user_box.dart';
 import 'package:coze/home_page/user_info/user_details.dart';
 import 'package:coze/Services/data_manager.dart';
 import 'package:coze/advertisement/advertise.dart'; // ✅ Centralized Ads
+import 'package:coze/widgets/filter_widget.dart';
 
 class Nur12Btn extends StatefulWidget {
   const Nur12Btn({super.key});

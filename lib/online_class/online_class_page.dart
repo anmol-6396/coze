@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:coze/home_page/user_info/user_details.dart';
 import 'package:coze/home_page/user_info/user_box.dart';
 import 'package:coze/advertisement/advertise.dart';
+import 'package:coze/widgets/filter_widget.dart';
 
 class OnlineClassPage extends StatefulWidget {
   const OnlineClassPage({super.key});
@@ -17,6 +18,12 @@ class _OnlineClassPageState extends State<OnlineClassPage> {
   final TextEditingController _searchController = TextEditingController();
   final currentUserUid = FirebaseAuth.instance.currentUser?.uid ?? '';
   
+  String? selectedSubject;
+  String? selectedMode;
+
+  final List<String> subjectList = ['Python', 'Java', 'Web Dev', 'App Dev', 'Maths', 'Science', 'English', 'Commerce', 'Competitive'];
+  final List<String> modeList = ['Live Class', 'Recorded Batch', '1-on-1 Tuition'];
+
   List<Map<String, dynamic>> _allOnlineClasses = [];
   List<Map<String, dynamic>> _filteredClasses = [];
   bool _isLoading = true;
@@ -66,15 +73,39 @@ class _OnlineClassPageState extends State<OnlineClassPage> {
     }
   }
 
-  void _filterSearch(String query) {
+  void _applyFilters() {
+    final query = _searchController.text.trim().toLowerCase();
     setState(() {
-      _filteredClasses = _allOnlineClasses
-          .where((item) => 
-            (item['name'] ?? '').toString().toLowerCase().contains(query.toLowerCase()) || 
-            (item['subjects'] ?? '').toString().toLowerCase().contains(query.toLowerCase()) ||
-            (item['about'] ?? '').toString().toLowerCase().contains(query.toLowerCase())
-          )
-          .toList();
+      _filteredClasses = _allOnlineClasses.where((item) {
+        final name = (item['name'] ?? '').toString().toLowerCase();
+        final subjects = (item['subjects'] ?? item['subject'] ?? '').toString().toLowerCase();
+        final about = (item['about'] ?? '').toString().toLowerCase();
+        final mode = (item['mode'] ?? item['classType'] ?? '').toString().toLowerCase();
+
+        // Search Query
+        if (query.isNotEmpty) {
+          if (!name.contains(query) && !subjects.contains(query) && !about.contains(query)) {
+            return false;
+          }
+        }
+
+        // Subject Filter
+        if (selectedSubject != null && selectedSubject!.isNotEmpty) {
+          if (!subjects.contains(selectedSubject!.toLowerCase()) &&
+              !name.contains(selectedSubject!.toLowerCase())) {
+            return false;
+          }
+        }
+
+        // Mode Filter
+        if (selectedMode != null && selectedMode!.isNotEmpty) {
+          if (!mode.contains(selectedMode!.toLowerCase())) {
+            return false;
+          }
+        }
+
+        return true;
+      }).toList();
     });
   }
 
@@ -109,7 +140,7 @@ class _OnlineClassPageState extends State<OnlineClassPage> {
             color: Colors.indigo,
             child: TextField(
               controller: _searchController,
-              onChanged: _filterSearch,
+              onChanged: (_) => _applyFilters(),
               style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
                 filled: true,
@@ -122,7 +153,7 @@ class _OnlineClassPageState extends State<OnlineClassPage> {
                       icon: const Icon(Icons.clear, color: Colors.grey),
                       onPressed: () {
                         _searchController.clear();
-                        _filterSearch('');
+                        _applyFilters();
                       },
                     )
                   : null,
@@ -133,6 +164,24 @@ class _OnlineClassPageState extends State<OnlineClassPage> {
                 ),
               ),
             ),
+          ),
+
+          // 🔹 Online Class Filter Widget
+          FilterWidget(
+            title: "Course Filters",
+            customSections: {
+              "SUBJECT": subjectList,
+              "MODE": modeList,
+            },
+            customSelectedFilters: {
+              "SUBJECT": selectedSubject,
+              "MODE": selectedMode,
+            },
+            onCustomFilterChanged: (map) {
+              selectedSubject = map["SUBJECT"];
+              selectedMode = map["MODE"];
+              _applyFilters();
+            },
           ),
           
           Expanded(
