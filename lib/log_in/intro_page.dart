@@ -10,8 +10,75 @@ class IntroPage extends StatefulWidget {
   State<IntroPage> createState() => _IntroPageState();
 }
 
-class _IntroPageState extends State<IntroPage> {
+class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
+  late AnimationController _mainController;
+  late AnimationController _shimmerController;
+
+  late Animation<double> _glowOpacity;
+  late Animation<double> _letterSpacing;
+  late Animation<double> _cardOpacity;
+  late Animation<Offset> _cardSlide;
+
+  final List<String> _letters = ['C', 'O', 'Z', 'E'];
   bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 🔹 Main Entrance Animation Sequence Controller
+    _mainController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+
+    // 🔹 Continuous Shimmer Light Sweep Controller
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat();
+
+    // 1. Ambient Glow Fade In
+    _glowOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _mainController,
+        curve: const Interval(0.0, 0.4, curve: Curves.easeIn),
+      ),
+    );
+
+    // 2. Letter Spacing Animation (18 -> 8)
+    _letterSpacing = Tween<double>(begin: 18.0, end: 8.0).animate(
+      CurvedAnimation(
+        parent: _mainController,
+        curve: const Interval(0.1, 0.6, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // 3. Card Fade In & Slide Up
+    _cardOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _mainController,
+        curve: const Interval(0.5, 0.9, curve: Curves.easeIn),
+      ),
+    );
+
+    _cardSlide = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+      CurvedAnimation(
+        parent: _mainController,
+        curve: const Interval(0.5, 0.95, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // Start Entrance Timeline
+    _mainController.forward();
+  }
+
+  @override
+  void dispose() {
+    _mainController.dispose();
+    _shimmerController.dispose();
+    super.dispose();
+  }
 
   Future<bool> _checkInternet() async {
     return await InternetConnectionChecker.instance.hasConnection;
@@ -20,7 +87,7 @@ class _IntroPageState extends State<IntroPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF090A0F), // 🖤 Deep Premium Black Canvas
+      backgroundColor: const Color(0xFF090A0F), // 🖤 Deep Black Screen
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -35,17 +102,29 @@ class _IntroPageState extends State<IntroPage> {
           ),
         ),
         child: Stack(
+          alignment: Alignment.center,
           children: [
-            // 🔹 Ambient Glowing Background Blobs
-            Positioned(
-              top: 80.h,
-              right: -50.w,
-              child: _buildGlow(220.w, const Color(0xFF3B82F6).withValues(alpha: 0.15)),
-            ),
-            Positioned(
-              bottom: 120.h,
-              left: -60.w,
-              child: _buildGlow(240.w, const Color(0xFF6366F1).withValues(alpha: 0.12)),
+            // 🔹 Ambient Glowing Background Pulse
+            AnimatedBuilder(
+              animation: _glowOpacity,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: _glowOpacity.value * 0.25,
+                  child: Container(
+                    width: 320.w,
+                    height: 240.w,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          Color(0xFF3B82F6),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
 
             SafeArea(
@@ -58,188 +137,203 @@ class _IntroPageState extends State<IntroPage> {
                     children: [
                       SizedBox(height: 10.h),
 
-                      // 🌟 1. Glowing Brand Icon Header
-                      Container(
-                        width: 90.w,
-                        height: 90.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.05),
-                          border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.4), width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blueAccent.withValues(alpha: 0.25),
-                              blurRadius: 30,
-                              spreadRadius: 4,
-                            )
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.rocket_launch_rounded,
-                          color: Colors.blueAccent,
-                          size: 42.sp,
-                        ),
+                      // 🌟 1. Animated Letters "C O Z E" with Shimmer & Staggered Entrance
+                      AnimatedBuilder(
+                        animation: _mainController,
+                        builder: (context, child) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(_letters.length, (index) {
+                              final double start = 0.1 + (index * 0.1);
+                              final double end = (start + 0.3).clamp(0.0, 1.0);
+
+                              final letterAnimation = CurvedAnimation(
+                                parent: _mainController,
+                                curve: Interval(start, end, curve: Curves.easeOutBack),
+                              );
+
+                              return AnimatedBuilder(
+                                animation: letterAnimation,
+                                builder: (context, child) {
+                                  return Opacity(
+                                    opacity: letterAnimation.value.clamp(0.0, 1.0),
+                                    child: Transform.translate(
+                                      offset: Offset(0, 24 * (1 - letterAnimation.value)),
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: _letterSpacing.value.w,
+                                        ),
+                                        child: _buildShimmerText(_letters[index]),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            }),
+                          );
+                        },
                       ),
 
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 12.h),
 
-                      // 🌟 Brand Title
+                      // 🌟 Tagline
                       Text(
-                        "COZE",
+                        "CONNECT OUR ZONE WITH EXPERTS",
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 26.sp,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 4.0,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Colors.blueAccent.withValues(alpha: 0.5),
-                              blurRadius: 20,
-                            ),
-                          ],
+                          fontSize: 10.5.sp,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 2.2,
+                          color: Colors.white54,
                         ),
                       ),
 
-                      SizedBox(height: 28.h),
+                      SizedBox(height: 36.h),
 
-                      // 🌟 2. Glassmorphic Dark Card
-                      Container(
-                        padding: EdgeInsets.all(24.r),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.04),
-                          borderRadius: BorderRadius.circular(32.r),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1),
-                            width: 1.2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              blurRadius: 30,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              "Empower Your Future",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 24.sp,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 0.5,
+                      // 🌟 2. Animated Entrance for Content Card
+                      SlideTransition(
+                        position: _cardSlide,
+                        child: FadeTransition(
+                          opacity: _cardOpacity,
+                          child: Container(
+                            padding: EdgeInsets.all(24.r),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.04),
+                              borderRadius: BorderRadius.circular(32.r),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                width: 1.2,
                               ),
-                            ),
-                            SizedBox(height: 12.h),
-                            Text(
-                              "Access world-class expertise in just a few taps. We connect you with the best mentors to accelerate your success.",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 13.5.sp,
-                                color: Colors.white70,
-                                height: 1.5,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-
-                            SizedBox(height: 28.h),
-
-                            // 🌟 Feature Highlights Row
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                _buildDarkFeatureItem(Icons.verified_user_rounded, "Verified"),
-                                _buildDarkFeatureItem(Icons.bolt_rounded, "Fast"),
-                                _buildDarkFeatureItem(Icons.support_agent_rounded, "Support"),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.4),
+                                  blurRadius: 30,
+                                  offset: const Offset(0, 10),
+                                ),
                               ],
                             ),
-
-                            SizedBox(height: 32.h),
-
-                            // 🌟 3. Glowing Action Button
-                            Container(
-                              width: double.infinity,
-                              height: 58.h,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF2563EB), Color(0xFF4F46E5)],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                ),
-                                borderRadius: BorderRadius.circular(20.r),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.blueAccent.withValues(alpha: 0.4),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 6),
-                                  )
-                                ],
-                              ),
-                              child: ElevatedButton(
-                                onPressed: isLoading
-                                    ? null
-                                    : () async {
-                                        setState(() => isLoading = true);
-                                        bool hasInternet = await _checkInternet();
-                                        if (!mounted) return;
-                                        setState(() => isLoading = false);
-
-                                        if (!hasInternet) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: const Text("No internet connection"),
-                                              backgroundColor: Colors.redAccent,
-                                              behavior: SnackBarBehavior.floating,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(10.r),
-                                              ),
-                                            ),
-                                          );
-                                        } else {
-                                          Navigator.of(context).pushReplacement(
-                                            MaterialPageRoute(
-                                              builder: (context) => const ProviderSelectionPage(),
-                                            ),
-                                          );
-                                        }
-                                      },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.transparent,
-                                  shadowColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20.r),
+                            child: Column(
+                              children: [
+                                Text(
+                                  "Empower Your Future",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 24.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: 0.5,
                                   ),
                                 ),
-                                child: isLoading
-                                    ? SizedBox(
-                                        height: 22.h,
-                                        width: 22.h,
-                                        child: const CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2.5,
-                                        ),
+                                SizedBox(height: 12.h),
+                                Text(
+                                  "Access world-class expertise in just a few taps. We connect you with the best mentors to accelerate your success.",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 13.5.sp,
+                                    color: Colors.white70,
+                                    height: 1.5,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+
+                                SizedBox(height: 28.h),
+
+                                // Feature Highlights Row
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    _buildDarkFeatureItem(Icons.verified_user_rounded, "Verified"),
+                                    _buildDarkFeatureItem(Icons.bolt_rounded, "Fast"),
+                                    _buildDarkFeatureItem(Icons.support_agent_rounded, "Support"),
+                                  ],
+                                ),
+
+                                SizedBox(height: 32.h),
+
+                                // 🌟 3. Glowing Action Button
+                                Container(
+                                  width: double.infinity,
+                                  height: 58.h,
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF2563EB), Color(0xFF4F46E5)],
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20.r),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.blueAccent.withValues(alpha: 0.4),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 6),
                                       )
-                                    : Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "GET STARTED",
-                                            style: TextStyle(
-                                              fontSize: 16.sp,
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 2,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          SizedBox(width: 10.w),
-                                          Icon(Icons.arrow_forward_rounded, size: 20.sp, color: Colors.white),
-                                        ],
+                                    ],
+                                  ),
+                                  child: ElevatedButton(
+                                    onPressed: isLoading
+                                        ? null
+                                        : () async {
+                                            setState(() => isLoading = true);
+                                            bool hasInternet = await _checkInternet();
+                                            if (!mounted) return;
+                                            setState(() => isLoading = false);
+
+                                            if (!hasInternet) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: const Text("No internet connection"),
+                                                  backgroundColor: Colors.redAccent,
+                                                  behavior: SnackBarBehavior.floating,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(10.r),
+                                                  ),
+                                                ),
+                                              );
+                                            } else {
+                                              Navigator.of(context).pushReplacement(
+                                                MaterialPageRoute(
+                                                  builder: (context) => const ProviderSelectionPage(),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20.r),
                                       ),
-                              ),
+                                    ),
+                                    child: isLoading
+                                        ? SizedBox(
+                                            height: 22.h,
+                                            width: 22.h,
+                                            child: const CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2.5,
+                                            ),
+                                          )
+                                        : Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                "GET STARTED",
+                                                style: TextStyle(
+                                                  fontSize: 16.sp,
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 2,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              SizedBox(width: 10.w),
+                                              Icon(Icons.arrow_forward_rounded, size: 20.sp, color: Colors.white),
+                                            ],
+                                          ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
 
@@ -278,20 +372,34 @@ class _IntroPageState extends State<IntroPage> {
     );
   }
 
-  Widget _buildGlow(double size, Color color) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: color,
-            blurRadius: 60,
-            spreadRadius: 20,
+  /// 🔹 Shimmer Shader Effect for Brand Name
+  Widget _buildShimmerText(String text) {
+    return AnimatedBuilder(
+      animation: _shimmerController,
+      builder: (context, child) {
+        return ShaderMask(
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              colors: const [
+                Colors.white,
+                Colors.blueAccent,
+                Colors.white,
+              ],
+              stops: const [0.0, 0.5, 1.0],
+              transform: _GradientSweepTransform(_shimmerController.value),
+            ).createShader(bounds);
+          },
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 42.sp,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: 2.0,
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -318,5 +426,15 @@ class _IntroPageState extends State<IntroPage> {
         ),
       ],
     );
+  }
+}
+
+class _GradientSweepTransform extends GradientTransform {
+  final double value;
+  const _GradientSweepTransform(this.value);
+
+  @override
+  Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
+    return Matrix4.translationValues(bounds.width * value * 2 - bounds.width, 0, 0);
   }
 }
