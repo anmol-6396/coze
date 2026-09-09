@@ -18,8 +18,25 @@ class ProviderSelectionPage extends StatefulWidget {
   State<ProviderSelectionPage> createState() => _ProviderSelectionPageState();
 }
 
-class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
+class _ProviderSelectionPageState extends State<ProviderSelectionPage> with SingleTickerProviderStateMixin {
   bool isLoading = false;
+  late AnimationController _shimmerController;
+  final List<String> _letters = ['C', 'O', 'Z', 'E'];
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
 
   Future<void> _handlePostAuthNavigation() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -222,42 +239,25 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
                     children: [
                       SizedBox(height: 15.h),
 
-                      // Brand Logo Header
-                      Container(
-                        width: 70.w,
-                        height: 70.w,
-                        padding: EdgeInsets.all(12.r),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.05),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                              blurRadius: 25,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: Image.asset(
-                          'assets/images/cozeblack.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.stars_rounded,
-                            color: Colors.blueAccent,
-                            size: 32,
-                          ),
-                        ),
+                      // 🌟 Animated C O Z E Shimmer Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: _letters.map((letter) {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.w),
+                            child: _buildShimmerText(letter),
+                          );
+                        }).toList(),
                       ),
 
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 12.h),
 
                       // Header Text
                       Text(
                         widget.isGuestPrompt ? "Login Required" : "Welcome to Coze",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 26.sp,
+                          fontSize: 22.sp,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           letterSpacing: 0.8,
@@ -431,6 +431,37 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
     );
   }
 
+  /// 🔹 Shimmer Effect Shader for Brand Name
+  Widget _buildShimmerText(String text) {
+    return AnimatedBuilder(
+      animation: _shimmerController,
+      builder: (context, child) {
+        return ShaderMask(
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              colors: const [
+                Colors.white,
+                Colors.blueAccent,
+                Colors.white,
+              ],
+              stops: const [0.0, 0.5, 1.0],
+              transform: _GradientSweepTransform(_shimmerController.value),
+            ).createShader(bounds);
+          },
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 36.sp,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: 2.0,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildGlow(double size, Color color) {
     return Container(
       width: size,
@@ -519,5 +550,15 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
         ),
       ),
     );
+  }
+}
+
+class _GradientSweepTransform extends GradientTransform {
+  final double value;
+  const _GradientSweepTransform(this.value);
+
+  @override
+  Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
+    return Matrix4.translationValues(bounds.width * value * 2 - bounds.width, 0, 0);
   }
 }
