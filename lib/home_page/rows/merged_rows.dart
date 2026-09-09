@@ -17,84 +17,204 @@ class MergedRows extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    Widget categoryItem(String label, {String? imagePath, IconData? icon, required Widget targetPage}) {
-      return InkWell(
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF141620) : Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.grey.shade200,
+          width: 1.w,
+        ),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: const [
+              Expanded(
+                child: _CategoryItem(
+                  label: "Tutor",
+                  imagePath: "assets/images/homebtn.png",
+                  targetPage: HomeBtn(),
+                  accentColor: Colors.blueAccent,
+                ),
+              ),
+              Expanded(
+                child: _CategoryItem(
+                  label: "Nur-12th",
+                  imagePath: "assets/images/nur.png",
+                  targetPage: Nur12Btn(),
+                  accentColor: Colors.purpleAccent,
+                ),
+              ),
+              Expanded(
+                child: _CategoryItem(
+                  label: "Coaching",
+                  imagePath: "assets/images/coaching.png",
+                  targetPage: CoachingBtn(),
+                  accentColor: Colors.orangeAccent,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              const Expanded(
+                child: _CategoryItem(
+                  label: "School",
+                  imagePath: "assets/images/school.png",
+                  targetPage: SchoolBtn(),
+                  accentColor: Color(0xFF0D9488), // Teal
+                ),
+              ),
+              const Expanded(
+                child: _CategoryItem(
+                  label: "College",
+                  imagePath: "assets/images/college.png",
+                  targetPage: CollegeBtn(),
+                  accentColor: Colors.indigoAccent,
+                ),
+              ),
+              Expanded(
+                child: _CategoryItem(
+                  label: "Library",
+                  icon: Icons.local_library_rounded,
+                  targetPage: const LibraryPage(),
+                  accentColor: Colors.amber.shade800,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryItem extends StatefulWidget {
+  final String label;
+  final String? imagePath;
+  final IconData? icon;
+  final Widget targetPage;
+  final Color accentColor;
+
+  const _CategoryItem({
+    required this.label,
+    this.imagePath,
+    this.icon,
+    required this.targetPage,
+    required this.accentColor,
+  });
+
+  @override
+  State<_CategoryItem> createState() => _CategoryItemState();
+}
+
+class _CategoryItemState extends State<_CategoryItem> {
+  bool _isHovered = false;
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final double scale = _isPressed ? 0.94 : (_isHovered ? 1.08 : 1.0);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
         onTap: () {
           AdvertiseManager().showInterstitialAd(() {
             Navigator.push(
               context,
               Platform.isIOS
-                  ? CupertinoPageRoute(builder: (context) => targetPage)
-                  : MaterialPageRoute(builder: (context) => targetPage),
+                  ? CupertinoPageRoute(builder: (context) => widget.targetPage)
+                  : MaterialPageRoute(builder: (context) => widget.targetPage),
             );
           });
         },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.all(10.w),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.blue.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          transform: Matrix4.identity()..scale(scale),
+          transformAlignment: Alignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 46.w,
+                height: 46.w,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16.r),
+                  color: isDark
+                      ? widget.accentColor.withValues(alpha: 0.15)
+                      : widget.accentColor.withValues(alpha: 0.08),
+                  border: Border.all(
+                    color: (_isHovered || _isPressed)
+                        ? widget.accentColor
+                        : (isDark
+                            ? widget.accentColor.withValues(alpha: 0.3)
+                            : widget.accentColor.withValues(alpha: 0.18)),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    if (_isHovered || _isPressed)
+                      BoxShadow(
+                        color: widget.accentColor.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      )
+                    else if (!isDark)
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                  ],
+                ),
+                child: Center(
+                  child: widget.imagePath != null
+                      ? Image.asset(
+                          widget.imagePath!,
+                          width: 25.w,
+                          height: 25.w,
+                          fit: BoxFit.contain,
+                        )
+                      : Icon(
+                          widget.icon ?? Icons.category_rounded,
+                          color: widget.accentColor,
+                          size: 22.sp,
+                        ),
+                ),
               ),
-              child: imagePath != null
-                ? Image.asset(
-                    imagePath,
-                    width: 32.w,
-                    height: 32.w,
-                    fit: BoxFit.contain,
-                  )
-                : Icon(icon, color: Colors.blue, size: 28.sp),
-            ),
-            SizedBox(height: 6.h),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : Colors.black87,
+              SizedBox(height: 5.h),
+              Text(
+                widget.label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10.5.sp,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white70 : Colors.black87,
+                  letterSpacing: 0.2,
+                ),
               ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.r),
-        side: BorderSide(
-          color: isDark ? Colors.white10 : Colors.grey.shade200,
-          width: 1.w,
-        ),
-      ),
-      color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 8.w),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Expanded(child: categoryItem("Tutor", imagePath: "assets/images/homebtn.png", targetPage: const HomeBtn())),
-                Expanded(child: categoryItem("Nur-12th", imagePath: "assets/images/nur.png", targetPage: const Nur12Btn())),
-                Expanded(child: categoryItem("Coaching", imagePath: "assets/images/coaching.png", targetPage: const CoachingBtn())),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Expanded(child: categoryItem("School", imagePath: "assets/images/school.png", targetPage: const SchoolBtn())),
-                Expanded(child: categoryItem("College", imagePath: "assets/images/college.png", targetPage: const CollegeBtn())),
-                Expanded(child: categoryItem("Library", icon: Icons.library_books_rounded, targetPage: const LibraryPage())),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
