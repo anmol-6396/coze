@@ -79,10 +79,10 @@ class _FilterWidgetState extends State<FilterWidget> {
 
             return Container(
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(ctx).size.height * 0.82,
+                maxHeight: MediaQuery.of(ctx).size.height * 0.85,
               ),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF12141A) : Colors.white,
+                color: isDark ? const Color(0xFF14161F) : Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
                 boxShadow: [
                   BoxShadow(
@@ -97,7 +97,7 @@ class _FilterWidgetState extends State<FilterWidget> {
                 children: [
                   SizedBox(height: 12.h),
 
-                  // 🔹 Top Drag Bar Indicator
+                  // 🔹 Top Drag Handle Bar
                   Center(
                     child: Container(
                       width: 42.w,
@@ -236,7 +236,7 @@ class _FilterWidgetState extends State<FilterWidget> {
                             final accentColor = gradient.colors.first;
 
                             return Container(
-                              margin: EdgeInsets.only(bottom: 20.h),
+                              margin: EdgeInsets.only(bottom: 22.h),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -431,165 +431,246 @@ class _FilterWidgetState extends State<FilterWidget> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final sections = _getSections();
     final selectedMap = _getSelectedMap();
     final activeEntries = selectedMap.entries.where((e) => e.value != null && e.value!.isNotEmpty).toList();
     final activeCount = activeEntries.length;
     final hasActiveFilter = activeCount > 0;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      child: Row(
-        children: [
-          // 🔹 Compact Modern Filter Trigger Button
-          InkWell(
-            onTap: () => _openFilterBottomSheet(context),
-            borderRadius: BorderRadius.circular(22.r),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-              decoration: BoxDecoration(
-                gradient: hasActiveFilter
-                    ? const LinearGradient(
-                        colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                      )
-                    : null,
-                color: hasActiveFilter
-                    ? null
-                    : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white),
-                borderRadius: BorderRadius.circular(22.r),
-                border: Border.all(
+    // Extract quick options for horizontal scroll row (e.g. first section options)
+    final quickSection = sections.entries.isNotEmpty ? sections.entries.first : null;
+    final quickKey = quickSection?.key;
+    final quickOptions = quickSection?.value ?? [];
+    final quickSelectedVal = quickKey != null ? selectedMap[quickKey] : null;
+
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        child: Row(
+          children: [
+            // 🌟 1. Premium Floating Filter Trigger Button
+            InkWell(
+              onTap: () => _openFilterBottomSheet(context),
+              borderRadius: BorderRadius.circular(25.r),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  gradient: hasActiveFilter
+                      ? const LinearGradient(
+                          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
                   color: hasActiveFilter
-                      ? Colors.blueAccent
-                      : (isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.1)),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
+                      ? null
+                      : (isDark ? const Color(0xFF1E222D) : Colors.white),
+                  borderRadius: BorderRadius.circular(25.r),
+                  border: Border.all(
                     color: hasActiveFilter
-                        ? Colors.blueAccent.withValues(alpha: 0.3)
-                        : Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  )
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.tune_rounded,
-                    size: 17.sp,
-                    color: hasActiveFilter ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                        ? Colors.blueAccent
+                        : (isDark ? Colors.white12 : Colors.grey.shade300),
+                    width: 1.2,
                   ),
-                  SizedBox(width: 6.w),
-                  Text(
-                    "Filter",
-                    style: TextStyle(
-                      fontSize: 13.5.sp,
-                      fontWeight: FontWeight.bold,
-                      color: hasActiveFilter ? Colors.white : (isDark ? Colors.white : Colors.black87),
-                    ),
-                  ),
-                  if (hasActiveFilter) ...[
-                    SizedBox(width: 6.w),
+                  boxShadow: [
+                    BoxShadow(
+                      color: hasActiveFilter
+                          ? Colors.blueAccent.withValues(alpha: 0.35)
+                          : Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    )
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      padding: EdgeInsets.all(5.r),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10.r),
+                        color: hasActiveFilter
+                            ? Colors.white.withValues(alpha: 0.2)
+                            : Colors.blueAccent.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
                       ),
-                      child: Text(
-                        "$activeCount",
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          color: Colors.blue.shade900,
-                          fontWeight: FontWeight.extrabold,
-                          height: 1.0,
+                      child: Icon(
+                        Icons.tune_rounded,
+                        size: 15.sp,
+                        color: hasActiveFilter ? Colors.white : Colors.blueAccent,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      "Filter",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w800,
+                        color: hasActiveFilter ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    if (hasActiveFilter) ...[
+                      SizedBox(width: 6.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Text(
+                          "$activeCount",
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: Colors.blue.shade900,
+                            fontWeight: FontWeight.black,
+                            height: 1.0,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-
-          SizedBox(width: 10.w),
-
-          // 🔹 Quick Active Badges Scroll Row
-          if (hasActiveFilter)
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Row(
-                  children: activeEntries.map((entry) {
-                    final key = entry.key;
-                    final val = entry.value!;
-                    final displayVal = (key.toUpperCase() == "CLASS" && RegExp(r'^\d+$').hasMatch(val))
-                        ? "Class $val"
-                        : val;
-
-                    return Padding(
-                      padding: EdgeInsets.only(right: 8.w),
-                      child: _buildActiveBadge(
-                        label: displayVal,
-                        onRemove: () {
-                          if (widget.onCustomFilterChanged != null) {
-                            final newMap = Map<String, String?>.from(selectedMap);
-                            newMap[key] = null;
-                            widget.onCustomFilterChanged!(newMap);
-                          } else if (widget.onFilterChanged != null) {
-                            final b = key == "BOARD" ? null : widget.selectedBoard;
-                            final c = key == "CLASS" ? null : widget.selectedClass;
-                            widget.onFilterChanged!(b, c);
-                          }
-                        },
-                        isDark: isDark,
+                    ] else ...[
+                      SizedBox(width: 4.w),
+                      Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 18.sp,
+                        color: isDark ? Colors.white54 : Colors.grey.shade600,
                       ),
-                    );
-                  }).toList(),
+                    ],
+                  ],
                 ),
               ),
             ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildActiveBadge({
-    required String label,
-    required VoidCallback onRemove,
-    required bool isDark,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.blueAccent.withValues(alpha: 0.15) : Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11.5.sp,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.blue.shade200 : Colors.blue.shade900,
-            ),
-          ),
-          SizedBox(width: 6.w),
-          GestureDetector(
-            onTap: onRemove,
-            child: Icon(
-              Icons.cancel_rounded,
-              size: 15.sp,
-              color: Colors.blueAccent,
-            ),
-          ),
-        ],
+            // 🔹 Clear All Quick Button if Filter Active
+            if (hasActiveFilter) ...[
+              SizedBox(width: 8.w),
+              InkWell(
+                onTap: () {
+                  if (widget.onCustomFilterChanged != null) {
+                    final newMap = <String, String?>{};
+                    for (var key in selectedMap.keys) {
+                      newMap[key] = null;
+                    }
+                    widget.onCustomFilterChanged!(newMap);
+                  } else if (widget.onFilterChanged != null) {
+                    widget.onFilterChanged!(null, null);
+                  }
+                },
+                borderRadius: BorderRadius.circular(20.r),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.close_rounded, size: 14.sp, color: Colors.redAccent),
+                      SizedBox(width: 3.w),
+                      Text(
+                        "Clear",
+                        style: TextStyle(
+                          fontSize: 11.5.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+
+            SizedBox(width: 10.w),
+
+            // 🌟 2. Direct Quick Horizontal Filter Pills
+            ...quickOptions.take(6).map((option) {
+              final isSelected = quickSelectedVal == option;
+              final isClass = quickKey?.toUpperCase() == "CLASS";
+              final displayLabel = (isClass && RegExp(r'^\d+$').hasMatch(option))
+                  ? "Class $option"
+                  : option;
+
+              return Padding(
+                padding: EdgeInsets.only(right: 8.w),
+                child: InkWell(
+                  onTap: () {
+                    final newVal = isSelected ? null : option;
+                    if (widget.onCustomFilterChanged != null) {
+                      final newMap = Map<String, String?>.from(selectedMap);
+                      newMap[quickKey!] = newVal;
+                      widget.onCustomFilterChanged!(newMap);
+                    } else if (widget.onFilterChanged != null) {
+                      if (quickKey == "BOARD") {
+                        widget.onFilterChanged!(newVal, widget.selectedClass);
+                      } else {
+                        widget.onFilterChanged!(widget.selectedBoard, newVal);
+                      }
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(22.r),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+                    decoration: BoxDecoration(
+                      gradient: isSelected
+                          ? const LinearGradient(
+                              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                            )
+                          : null,
+                      color: isSelected
+                          ? null
+                          : (isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white),
+                      borderRadius: BorderRadius.circular(22.r),
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.blueAccent
+                            : (isDark ? Colors.white12 : Colors.grey.shade300),
+                        width: isSelected ? 1.5 : 1.0,
+                      ),
+                      boxShadow: [
+                        if (isSelected)
+                          BoxShadow(
+                            color: Colors.blueAccent.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          )
+                        else if (!isDark)
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          )
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isSelected) ...[
+                          Icon(Icons.check_rounded, size: 14.sp, color: Colors.white),
+                          SizedBox(width: 4.w),
+                        ],
+                        Text(
+                          displayLabel,
+                          style: TextStyle(
+                            fontSize: 12.5.sp,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                            color: isSelected
+                                ? Colors.white
+                                : (isDark ? Colors.white87 : Colors.grey.shade800),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
