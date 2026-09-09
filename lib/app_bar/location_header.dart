@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coze/app_bar/location_manager/location_setup.dart';
+import 'package:coze/app_bar/location_manager/city_picker.dart';
 import 'package:coze/app_bar/notification/notification_btn.dart';
 import 'package:coze/app_bar/notification/notification_page.dart';
 import 'package:coze/advertisement/advertise.dart';
@@ -109,8 +110,8 @@ class _LocationHeaderState extends State<LocationHeader> {
         await Navigator.push(
           context,
           Platform.isIOS
-              ? CupertinoPageRoute(builder: (_) => const LocationSetupPage())
-              : MaterialPageRoute(builder: (_) => const LocationSetupPage()),
+              ? CupertinoPageRoute(builder: (_) => const CityPickerPage())
+              : MaterialPageRoute(builder: (_) => const CityPickerPage()),
         );
         _loadSavedLocality();
       },

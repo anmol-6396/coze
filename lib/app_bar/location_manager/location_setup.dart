@@ -90,7 +90,10 @@ class _LocationSetupPageState extends State<LocationSetupPage> {
            await prefs.setString("user_locality", locality);
            await prefs.setString("user_locality_full", full);
            
-           if (mounted) Navigator.pop(context, full);
+           setState(() {
+             _status = "Current Location: $full\n\nSearch another area or city below if you wish to change.";
+             _loading = false;
+           });
            return;
         }
       } catch (_) {}
