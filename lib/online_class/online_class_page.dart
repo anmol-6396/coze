@@ -127,7 +127,7 @@ class _OnlineClassPageState extends State<OnlineClassPage> {
           style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.indigo,
+        backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -137,7 +137,7 @@ class _OnlineClassPageState extends State<OnlineClassPage> {
           // 🔍 Specific Search Bar for this page
           Container(
             padding: EdgeInsets.all(16.r),
-            color: Colors.indigo,
+            color: Colors.blueAccent,
             child: TextField(
               controller: _searchController,
               onChanged: (_) => _applyFilters(),

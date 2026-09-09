@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'home_tutor_btn.dart';
 import 'home_co_btn.dart';
+import 'package:coze/widgets/animated_tutor_icon.dart';
 
 class HomeBtn extends StatelessWidget {
   const HomeBtn({super.key});
