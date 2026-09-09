@@ -16,7 +16,6 @@ class AdvertiseManager {
   InterstitialAd? _interstitialAd;
   bool _isInterstitialLoading = false;
   int _detailOpenCount = 0;
-  DateTime _lastAdTime = DateTime.now(); // ✅ Track last ad time
 
   // ✅ Preload Interstitial
   void preloadInterstitial() {
@@ -40,17 +39,13 @@ class AdvertiseManager {
     );
   }
 
-  // ✅ Show Interstitial Ad (Every 5th Time OR after 30 seconds)
+  // ✅ Show Interstitial Ad (Strictly Every 6th Click)
   void showInterstitialAd(VoidCallback onAdDismissed) {
     _detailOpenCount++;
-    final now = DateTime.now();
-    final secondsSinceLastAd = now.difference(_lastAdTime).inSeconds;
-    
-    debugPrint("Click Count: $_detailOpenCount, Secs since last ad: $secondsSinceLastAd");
+    debugPrint("Click Count: $_detailOpenCount");
 
-    // ✅ Rule 1: Every 5th click
-    // ✅ Rule 2: If 30 seconds passed, show ad on next click
-    if (_detailOpenCount >= 5 || secondsSinceLastAd >= 30) {
+    // ✅ Rule: Show ad strictly after every 6th click
+    if (_detailOpenCount >= 6) {
       if (_interstitialAd != null) {
         _showReadyAd(onAdDismissed);
       } else {
@@ -66,7 +61,7 @@ class AdvertiseManager {
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         _interstitialAd = null;
-        _resetAdTracker(); // ✅ Reset both rules
+        _resetAdTracker();
         preloadInterstitial();
         onAdDismissed();
       },
@@ -95,7 +90,7 @@ class AdvertiseManager {
         onAdFailedToLoad: (error) {
           _isInterstitialLoading = false;
           debugPrint('Interstitial fallback failed: $error');
-          _resetAdTracker(); // Reset even if failed so timer starts fresh
+          _resetAdTracker();
           onAdDismissed();
         },
       ),
@@ -105,7 +100,6 @@ class AdvertiseManager {
   // ✅ Reset logic helper
   void _resetAdTracker() {
     _detailOpenCount = 0;
-    _lastAdTime = DateTime.now();
   }
 
   // ✅ Native Ad Helper for Grid/Lists

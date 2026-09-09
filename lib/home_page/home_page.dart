@@ -464,23 +464,6 @@ class HomepageState extends State<Homepage> with AutomaticKeepAliveClientMixin {
                                 ),
                               ),
                               SizedBox(width: 8.w),
-                              if (_userData.isNotEmpty)
-                                Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? Colors.white10 : Colors.grey.shade200,
-                                    borderRadius: BorderRadius.circular(10.r),
-                                  ),
-                                  child: Text(
-                                    "${_userData.length}",
-                                    style: TextStyle(
-                                      fontSize: 11.sp,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blueAccent,
-                                    ),
-                                  ),
-                                ),
-                              SizedBox(width: 8.w),
                               Expanded(
                                 child: Container(
                                   height: 1.h,
