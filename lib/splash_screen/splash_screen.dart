@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coze/bottom_nav_bar/bottom_nav_bar.dart';
@@ -29,8 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigateNext() async {
-    // Increased delay to let the full-screen GIF play a bit
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 2));
 
     final user = FirebaseAuth.instance.currentUser;
 
@@ -86,14 +86,52 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Dark background for GIF
-      body: SizedBox.expand(
-        child: Image.asset(
-          'assets/images/splashscreen-gif.gif',
-          fit: BoxFit.cover, // ✅ Full screen cover
-          errorBuilder: (context, error, stackTrace) => const Center(
-            child: CircularProgressIndicator(color: Colors.white),
-          ),
+      backgroundColor: const Color(0xFF0D0E12),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 90.w,
+              height: 90.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blueAccent.withValues(alpha: 0.12),
+                border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.4), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blueAccent.withValues(alpha: 0.25),
+                    blurRadius: 30,
+                    spreadRadius: 5,
+                  )
+                ],
+              ),
+              child: Icon(
+                Icons.stars_rounded,
+                color: Colors.blueAccent,
+                size: 42.sp,
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              "COZE",
+              style: TextStyle(
+                fontSize: 28.sp,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 4.0,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            SizedBox(
+              width: 24.w,
+              height: 24.w,
+              child: const CircularProgressIndicator(
+                color: Colors.blueAccent,
+                strokeWidth: 2.5,
+              ),
+            ),
+          ],
         ),
       ),
     );
